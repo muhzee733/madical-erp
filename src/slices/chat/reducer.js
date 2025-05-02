@@ -3,7 +3,9 @@ import {
   SET_ROOM_ID,
   ADD_MESSAGE,
   CLEAR_MESSAGES,
-} from './chat.types';
+  SET_SELECTED_ROOM,
+  SET_MESSAGES
+} from "./chat.types";
 
 const initialState = {
   socket: null,
@@ -19,8 +21,17 @@ const chatReducer = (state = initialState, action) => {
       return { ...state, roomId: action.payload };
     case ADD_MESSAGE:
       return { ...state, messages: [...state.messages, action.payload] };
+    case SET_MESSAGES:
+      return { ...state, messages: action.payload };
     case CLEAR_MESSAGES:
       return { ...state, messages: [] };
+    case SET_SELECTED_ROOM:
+      return {
+        ...state,
+        selectedRoom: action.payload,
+        roomId: action.payload.id,
+      };
+
     default:
       return state;
   }

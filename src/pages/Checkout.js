@@ -14,8 +14,11 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import BreadCrumb from "../Components/Common/BreadCrumb";
+import Cookies from 'js-cookie';
 
 const EcommerceCheckout = () => {
+  
+  const token = Cookies.get('authUser');
   const [isProcessing, setIsProcessing] = useState(false);
   const { items = [], isLoading } = useSelector((state) => state.Cart || {});
   const location = useLocation();
@@ -23,11 +26,25 @@ const EcommerceCheckout = () => {
 
   document.title = "Checkout | ProMedicine";
 
+  if (!appointmentId) {
+    return (
+      <Container className="py-5 text-center">
+        <h4 className="text-danger">Invalid Checkout Session</h4>
+        <p>Please refresh you browser or login again. Thanks for your patient</p>
+      </Container>
+    );
+  }
+  
+
   const handleCompleteOrder = async () => {
     try {
       setIsProcessing(true);
       const orderResponse = await axios.post(`${process.env.REACT_APP_API_URL}/create_order/`, {
         appointmentId: appointmentId
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
       });
       const { orderId } = orderResponse;
       const stripeResponse = await axios.post(`${process.env.REACT_APP_API_URL}/create-stripe-session/`, {

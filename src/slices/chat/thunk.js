@@ -4,27 +4,30 @@ import {
   SET_ROOM_ID,
   ADD_MESSAGE,
   CLEAR_MESSAGES,
+  SET_MESSAGES
 } from './chat.types';
 import Cookies from 'js-cookie';
 
 let socketInstance = null;
 
 // Connect to WebSocket
-export const connectToChatRoom = (roomId, userId, appointmentId) => {
-  return (dispatch) => {
-    // const userId = Cookies.get('user');
-    const userId = 4152;
-    const socketUrl = `ws://localhost:8000/ws/chat/${roomId}/?user_id=${userId}`;
+export const connectToChatRoom = (roomId) => {
+  return (dispatch, getState) => {
+    const userData = Cookies.get('user');
+    const user = JSON.parse(userData);
+    const socketUrl = `ws://127.0.0.1:8000/ws/chat/${roomId}/?user_id=${user?.id}`;
     const socket = new WebSocket(socketUrl);
 
     socket.onopen = () => {
       console.log('WebSocket connected');
-      dispatch({ type: SET_SOCKET, payload: socket });
+      // dispatch({ type: SET_SOCKET, payload: socket });
+      dispatch({ type: SET_SOCKET, payload: 'connected' });
       dispatch({ type: SET_ROOM_ID, payload: roomId });
     };
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
+      console.log(data, 'data')
       dispatch({ type: ADD_MESSAGE, payload: data });
     };
 
@@ -39,37 +42,42 @@ export const connectToChatRoom = (roomId, userId, appointmentId) => {
 
 // Send message via WebSocket and save via REST
 export const sendMessage = (messageObj) => {
-  return async (dispatch, getState) => {
-    const { roomId } = getState().chat;
-
-    // Send over WebSocket
+  return (dispatch) => {
     if (socketInstance && socketInstance.readyState === WebSocket.OPEN) {
       socketInstance.send(JSON.stringify(messageObj));
-    }
-
-    // Save to backend
-    try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/messages/${roomId}/`, messageObj);
-    } catch (error) {
-      console.error('Error saving message to backend:', error);
+    } else {
+      console.error('WebSocket is not open');
     }
   };
 };
+
+
 
 // Fetch old messages from API
 export const fetchMessages = (roomId) => {
   return async (dispatch) => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/messages/${roomId}/`);
-      console.log(response, 'fetch message')
-      const messages = response.data;
-      messages.forEach((msg) => {
-        dispatch({ type: ADD_MESSAGE, payload: msg });
-      });
+      const messages = response;
+      dispatch({ type: SET_MESSAGES, payload: messages });
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
   };
 };
 
-export const clearMessages = () => ({ type: CLEAR_MESSAGES });
+// Fetch list of chat rooms
+export const fetchRooms = () => {
+  return async (dispatch) => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/rooms/`);
+      const rooms = response;
+      return rooms
+
+    } catch (error) {
+      console.error('Error fetching chat rooms:', error);
+      return [];
+    }
+  };
+};
+

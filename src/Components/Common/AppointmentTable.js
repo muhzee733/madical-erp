@@ -12,29 +12,13 @@ const formatTime = (time) => {
 };
 
 const AppointmentTable = ({ orders, loading, error }) => {
+
   const navigate = useNavigate();
-
-  const handleChatButtonClick = async (order) => {
-    const payload = {
-      patient: order.patient_id,
-      doctor: order.appointment?.doctor,
-      appointment: order.appointment?.id,
-    };
-
-    try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/rooms/`, payload);
-      navigate(`/chatroom/${response?.id}`);
-    } catch (error) {
-      console.error("Failed to create room:", error);
-      alert("Something went wrong while creating the chat room.");
-    }
-  };
-
-  const columns = useMemo(
+    const columns = useMemo(
     () => [
       {
         header: "#",
-        accessorKey: "index", // Added index as a custom accessor
+        accessorKey: "index", 
         enableColumnFilter: false,
         enableSorting: false,
         cell: (cell) => <span>{cell.row.index + 1}</span>, // Shows row index (1-based)
@@ -80,20 +64,7 @@ const AppointmentTable = ({ orders, loading, error }) => {
 
           return <span className={`badge bg-${badgeColor}`}>{status}</span>;
         },
-      },
-      {
-        header: "Chat",
-        accessorKey: "Chat",
-        enableColumnFilter: false,
-        cell: (cell) => (
-          <button
-            onClick={() => handleChatButtonClick(cell.row.original)}
-            className="btn btn-primary"
-          >
-            Open Chat
-          </button>
-        ),
-      },
+      }      
     ],
     []
   );

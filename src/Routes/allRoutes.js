@@ -35,7 +35,7 @@ const authProtectedRoutes = [
   { path: "/dashboard/doctor", component: <DoctorDashboard /> },
   { path: "/dashboard/admin", component: <AdminDashboard /> },
   { path: "/checkout", component: <Checkout /> },
-  { path: "/chatroom/:roomid", component: <Chatroom /> },
+  { path: "/chatroom", component: <Chatroom /> },
   
    //User Profile
   { path: "/profile", component: <UserProfile /> },

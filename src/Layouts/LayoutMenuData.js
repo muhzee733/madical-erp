@@ -10,7 +10,9 @@ const Navdata = () => {
 
   const updateIconSidebar = (e) => {
     if (e?.target?.getAttribute("subitems")) {
-      const iconItems = document.querySelectorAll("#two-column-menu .nav-icon.active");
+      const iconItems = document.querySelectorAll(
+        "#two-column-menu .nav-icon.active"
+      );
       iconItems.forEach((item) => {
         item.classList.remove("active");
         const id = item.getAttribute("subitems");
@@ -26,6 +28,7 @@ const Navdata = () => {
       Widgets: "/widgets",
       Questions: "/questions",
       Appointment: "/appointment",
+      Chat: "/chatroom",
     };
 
     if (routes[currentState]) {
@@ -38,7 +41,6 @@ const Navdata = () => {
     // Get user role from cookies
     const user = Cookies.get("user") ? JSON.parse(Cookies.get("user")) : null;
     setRole(user?.role || null);
-
   }, [currentState, navigate]);
 
   const commonMenuItems = [
@@ -54,8 +56,21 @@ const Navdata = () => {
       stateVariables: isDashboard,
       click: (e) => {
         e.preventDefault();
-        setIsDashboard(!isDashboard);
+        setIsDashboard(true);
         setCurrentState("Dashboard");
+        updateIconSidebar(e);
+      },
+    },
+    {
+      id: "chatroom",
+      label: "Chat Room",
+      icon: "bx bx-message-rounded-dots",
+      link: "/chatroom",
+      stateVariables: currentState === "Chat",
+      click: (e) => {
+        e.preventDefault();
+        setIsDashboard(false);
+        setCurrentState("Chat");
         updateIconSidebar(e);
       },
     },
@@ -97,7 +112,7 @@ const Navdata = () => {
         e.preventDefault();
         setCurrentState("Questions");
       },
-    }
+    },
   ];
 
   let roleBasedMenu = [];
