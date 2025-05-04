@@ -46,10 +46,12 @@ const EcommerceCheckout = () => {
           Authorization: `Bearer ${token}`,
         }
       });
+      console.log(orderResponse, 'orderResponse')
       const { orderId } = orderResponse;
       const stripeResponse = await axios.post(`${process.env.REACT_APP_API_URL}/create-stripe-session/`, {
         orderId: orderId,
       });
+      console.log(stripeResponse, 'stripeResponse')
 
       const { checkout_url } = stripeResponse;
       window.location.href = checkout_url;

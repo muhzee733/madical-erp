@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Container, Card, CardBody, Row, Col, Button, Table, Spinner } from "reactstrap";
+import {
+  Container,
+  Card,
+  CardBody,
+  Row,
+  Col,
+  Button,
+  Table,
+  Spinner,
+} from "reactstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import dayjs from 'dayjs';
 
 const Success = () => {
   const navigate = useNavigate();
@@ -9,18 +19,25 @@ const Success = () => {
   const [paymentData, setPaymentData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Helper to get query param
-  const getPaymentId = () => {
+  // Get session_id from URL
+  const getSessionId = () => {
     const params = new URLSearchParams(location.search);
-    return params.get("paymentId");
+    return params.get("session_id");
   };
 
   useEffect(() => {
     const fetchPaymentData = async () => {
+      const sessionId = getSessionId();
+
+      if (!sessionId) {
+        console.error("No session_id found in URL");
+        setLoading(false);
+        return;
+      }
+
       try {
-        const paymentId = getPaymentId();
-        const res = await axios.get(`/api/payment/${paymentId}`);
-        setPaymentData(res.data);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/payment/success?session_id=${sessionId}`);
+        setPaymentData(res);
       } catch (error) {
         console.error("Failed to fetch payment data", error);
       } finally {
@@ -30,6 +47,14 @@ const Success = () => {
 
     fetchPaymentData();
   }, []);
+  const formatDate = (date) => {
+    return dayjs(date).format('MMMM D, YYYY');  // Example: "May 4, 2025"
+  };
+  
+  // Format time
+  const formatTime = (time) => {
+    return dayjs(time, 'HH:mm:ss').format('h:mm A');  // Example: "8:15 PM"
+  };
 
   const handleBackToDashboard = () => {
     navigate("/dashboard");
@@ -60,7 +85,7 @@ const Success = () => {
               <CardBody>
                 <div className="mb-4">
                   <div className="avatar-lg mx-auto">
-                    <div className="avatar-title bg-light text-primary rounded-circle fs-36">
+                    <div className="avatar-title bg-light text-success rounded-circle fs-36">
                       <i className="ri-checkbox-circle-line"></i>
                     </div>
                   </div>
@@ -79,7 +104,7 @@ const Success = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {paymentData.details.map((item, index) => (
+                      {paymentData.details?.map((item, index) => (
                         <tr key={index}>
                           <td>{item.title}</td>
                           <td>${item.amount}</td>
@@ -95,20 +120,28 @@ const Success = () => {
                     <strong>Name:</strong> {paymentData.name}
                   </p>
                   <p className="mb-1">
-                    <strong>Address:</strong> {paymentData.address}
-                  </p>
-                  <p className="mb-0">
                     <strong>Contact No:</strong> {paymentData.contact}
                   </p>
+                </div>
+
+                <div className="text-start mb-4">
+                  <h5>Appointment Details</h5>
+                  {paymentData.details?.map((item, index) => (
+                    <div key={index} className="mb-2">
+                      <p><strong>{item.title}</strong></p>
+                      <p><strong>Date:</strong> {formatDate(item.date)}</p>
+                      <p><strong>Time:</strong> {(item.start_time).slice(0,6)}</p>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="d-flex justify-content-center gap-2">
                   <Button color="primary" onClick={handleBackToDashboard}>
                     Back to Dashboard
                   </Button>
-                  <Button color="light" onClick={handlePrintReceipt}>
+                  {/* <Button color="light" onClick={handlePrintReceipt}>
                     Print Receipt
-                  </Button>
+                  </Button> */}
                 </div>
               </CardBody>
             </Card>

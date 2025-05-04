@@ -1,15 +1,19 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAppointments } from "../../slices/appointments/thunk";
+import { addAppointmentToCart } from "../../slices/cart/thunk";
+import { getOrders } from "../../slices/OrderAppointment/thunk";
+import classnames from "classnames";
+import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardBody,
   CardTitle,
   Row,
   Col,
-  CardText,
-  Spinner,
   Button,
+  Spinner,
   ListGroup,
   ListGroupItem,
   Nav,
@@ -18,11 +22,6 @@ import {
   TabContent,
   TabPane,
 } from "reactstrap";
-import { addAppointmentToCart } from "../../slices/cart/thunk";
-import { getOrders } from "../../slices/OrderAppointment/thunk";
-import classnames from "classnames";
-import dayjs from "dayjs";
-import { useNavigate } from "react-router-dom";
 import AppointmentTable from "../../Components/Common/AppointmentTable";
 
 const MiniAppointment = () => {
@@ -33,17 +32,20 @@ const MiniAppointment = () => {
     (state) => state.Appointment || {}
   );
   const { items: cartItems } = useSelector((state) => state.Cart || {});
-
-  const [loading, setLoading] = useState(true);
-  const [loadingAppointmentId, setLoadingAppointmentId] = useState(null);
-  const [activeDateTab, setActiveDateTab] = useState({});
-
   const {
     orders,
     loading: ordersLoading,
     error: ordersError,
   } = useSelector((state) => state.OrderAppointment);
-  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+  const [loading, setLoading] = useState(true);
+  const [loadingAppointmentId, setLoadingAppointmentId] = useState(null);
+  const [activeDateTab, setActiveDateTab] = useState({});
+
+  const days = useMemo(
+    () => ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    []
+  );
 
   useEffect(() => {
     dispatch(getAppointments());
@@ -56,6 +58,7 @@ const MiniAppointment = () => {
     dispatch(addAppointmentToCart(appointment));
     setLoadingAppointmentId(null);
   };
+
   useEffect(() => {
     if (appointments?.doctors?.length) {
       const newActiveTabs = {};
@@ -70,9 +73,7 @@ const MiniAppointment = () => {
   }, [appointments]);
 
   const isInCart = useCallback(
-    (appointmentId) => {
-      return cartItems.some((item) => item.id === appointmentId);
-    },
+    (appointmentId) => cartItems.some((item) => item.id === appointmentId),
     [cartItems]
   );
 
@@ -83,43 +84,50 @@ const MiniAppointment = () => {
     }));
   };
 
+  if (loading) {
+    return (
+      <Col sm="12" className="text-center">
+        <Spinner color="primary" />
+      </Col>
+    );
+  }
+
+  if (error) {
+    return (
+      <Col sm="12">
+        <Card>
+          <CardBody>
+            <CardTitle tag="h5">Error</CardTitle>
+            <CardText>{error}</CardText>
+          </CardBody>
+        </Card>
+      </Col>
+    );
+  }
+
   return (
     <div>
       <Row>
-        {loading ? (
-          <Col sm="12" className="text-center">
-            <Spinner color="primary" />
-          </Col>
-        ) : error ? (
-          <Col sm="12">
-            <Card>
-              <CardBody>
-                <CardTitle tag="h5">Error</CardTitle>
-                <CardText>{error}</CardText>
-              </CardBody>
-            </Card>
-          </Col>
-        ) : (
-          appointments?.doctors?.map((doctor) => {
-            const uniqueDates = [
-              ...new Set(doctor.appointments.map((a) => a.date)),
-            ];
+        {appointments?.doctors?.map((doctor) => {
+          const uniqueDates = [
+            ...new Set(doctor.appointments.map((a) => a.date)),
+          ];
 
-            return (
-              <Col sm="8" key={doctor.id}>
-                <Card>
-                  <CardBody>
-                    <CardTitle tag="h4" className="mb-4">
-                      <span>Book Your Appointment</span>{" "}
-                      <strong>(15 Min)</strong>
-                      <h6 className="mt-2">
-                        Doctor: {doctor.first_name} {doctor.last_name}
-                      </h6>
-                    </CardTitle>
+          return (
+            <Col sm="12" key={doctor.id}>
+              <Card>
+                <CardBody>
+                  <CardTitle tag="h4" className="mb-4">
+                    <span>Book Your Appointment</span> <strong>(15 Min)</strong>
+                    <h6 className="mt-2">
+                      Doctor: {doctor.first_name} {doctor.last_name}
+                    </h6>
+                  </CardTitle>
 
-                    {/* Tabs for Dates */}
-                    <Nav tabs className="nav-tabs-custom mb-3">
-                      {uniqueDates.map((date, idx) => (
+                  {/* Tabs for Dates */}
+                  <Nav tabs className="nav-tabs-custom mb-3">
+                    {uniqueDates.length > 0 ? (
+                      uniqueDates.map((date, idx) => (
                         <NavItem key={idx}>
                           <NavLink
                             href="#"
@@ -131,10 +139,16 @@ const MiniAppointment = () => {
                             {dayjs(date).format("ddd, DD MMM")}
                           </NavLink>
                         </NavItem>
-                      ))}
-                    </Nav>
+                      ))
+                    ) : (
+                      <Col sm="12" className="text-center">
+                        <CardText>No time schedule available</CardText>
+                      </Col>
+                    )}
+                  </Nav>
 
-                    {/* Appointment Times */}
+                  {/* Appointment Times */}
+                  {uniqueDates.length > 0 ? (
                     <TabContent
                       activeTab={activeDateTab[doctor.id] || uniqueDates[0]}
                       className="pt-3"
@@ -146,7 +160,7 @@ const MiniAppointment = () => {
                               .filter(
                                 (appointment) =>
                                   appointment.date === date &&
-                                  appointment.is_booked === false
+                                  !appointment.is_booked
                               )
                               .map((appointment) => (
                                 <Col md={4} key={appointment.id}>
@@ -193,14 +207,21 @@ const MiniAppointment = () => {
                         </TabPane>
                       ))}
                     </TabContent>
-                  </CardBody>
-                </Card>
-              </Col>
-            );
-          })
-        )}
-
-        {/* Right Side Weekly Timing */}
+                  ) : null}
+                </CardBody>
+              </Card>
+            </Col>
+          );
+        })}
+      </Row>
+      <Row>
+        <Col md="8">
+          <AppointmentTable
+            orders={orders}
+            loading={ordersLoading}
+            error={ordersError}
+          />
+        </Col>
         <Col sm="4">
           <Card>
             <CardBody>
@@ -224,12 +245,6 @@ const MiniAppointment = () => {
             </CardBody>
           </Card>
         </Col>
-      </Row>
-      <Row>
-        <Col md="8">
-          <AppointmentTable orders={orders} loading={ordersLoading} error={ordersError} />
-        </Col>
-        <Col md="4"></Col>
       </Row>
     </div>
   );
