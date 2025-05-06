@@ -42,6 +42,12 @@ export const registerUser = (user, navigator) => async (dispatch) => {
           console.log(error);
         }
       }
+    } else if (response.success === false) {
+      if (response.errors?.email) {
+        dispatch(registerUserFailed(response.errors.email[0]));
+      } else {
+        dispatch(registerUserFailed(response.errors));
+      }
     } else {
       dispatch(registerUserFailed(response.errors));
     }

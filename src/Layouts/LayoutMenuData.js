@@ -107,7 +107,7 @@ const Navdata = () => {
       id: "questions",
       label: "Questions",
       icon: "bx bx-help-circle",
-      link: "/questions",
+      link: "/dashboard/admin/questions",
       click: (e) => {
         e.preventDefault();
         setCurrentState("Questions");

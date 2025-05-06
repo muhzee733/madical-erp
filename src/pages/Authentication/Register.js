@@ -154,7 +154,7 @@ const Register = () => {
 
                         {registrationError ? (
                           <Alert color="danger">
-                            <div>{registrationError.email[0]}</div>
+                            <div>{registrationError}</div>
                           </Alert>
                         ) : null}
 
