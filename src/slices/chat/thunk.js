@@ -15,7 +15,7 @@ export const connectToChatRoom = (roomId) => {
   return (dispatch, getState) => {
     const userData = Cookies.get("user");
     const user = JSON.parse(userData);
-    const socketUrl = `ws://replica.madical-cluster-test.4tvfug.eun1.cache.amazonaws.com/ws/chat/${roomId}/?user_id=${user?.id}`;
+    const socketUrl = `ws://master.madical-cluster-test.4tvfug.eun1.cache.amazonaws.com/ws/chat/${roomId}/?user_id=${user?.id}`;
 
     const socket = new WebSocket(socketUrl);
 
@@ -25,10 +25,12 @@ export const connectToChatRoom = (roomId) => {
       dispatch({ type: SET_SOCKET, payload: "connected" });
       dispatch({ type: SET_ROOM_ID, payload: roomId });
     };
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log(data, "data");
       dispatch({ type: ADD_MESSAGE, payload: data });
     };
 
@@ -47,7 +49,7 @@ export const sendMessage = (messageObj) => {
     if (socketInstance && socketInstance.readyState === WebSocket.OPEN) {
       socketInstance.send(JSON.stringify(messageObj));
     } else {
-      console.error("WebSocket is not open");
+      console.error("WebSocket is not open. Trying to reconnect...");
     }
   };
 };
