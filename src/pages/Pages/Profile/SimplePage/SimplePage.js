@@ -414,7 +414,7 @@ const SimplePage = () => {
                                                         <p>You always want to make sure that your fonts work well
                                                             together and try to limit the number of fonts you use to
                                                             three or less. Experiment and play around with the fonts
-                                                            that you already have in the software you’re working with
+                                                            that you already have in the software you're working with
                                                             reputable font websites. This may be the most commonly
                                                             encountered tip I received from the designers I spoke with.
                                                             They highly encourage that you use different fonts in one
@@ -825,7 +825,7 @@ const SimplePage = () => {
                                                                                     <UncontrolledCollapse toggler="#collapse6" defaultOpen>
                                                                                         <div
                                                                                             className="accordion-body ms-2 ps-5">
-                                                                                            It makes a statement, it’s
+                                                                                            It makes a statement, it's
                                                                                             impressive graphic design.
                                                                                             Increase or decrease the
                                                                                             letter spacing depending on
@@ -1077,28 +1077,6 @@ const SimplePage = () => {
                                                                                                             </h6>
                                                                                                             <small>685
                                                                                                                 KB</small>
-                                                                                                        </div>
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                                <div className="col-auto">
-                                                                                                    <div
-                                                                                                        className="d-flex border border-dashed p-2 rounded position-relative">
-                                                                                                        <div
-                                                                                                            className="flex-shrink-0">
-                                                                                                            <i
-                                                                                                                className="ri-file-zip-line fs-17 text-info"></i>
-                                                                                                        </div>
-                                                                                                        <div
-                                                                                                            className="flex-grow-1 ms-2">
-                                                                                                            <h6><Link to="#"
-                                                                                                                className="stretched-link">Bank
-                                                                                                                Management
-                                                                                                                System
-                                                                                                                -
-                                                                                                                PSD</Link>
-                                                                                                            </h6>
-                                                                                                            <small>8.78
-                                                                                                                MB</small>
                                                                                                         </div>
                                                                                                     </div>
                                                                                                 </div>
@@ -1659,15 +1637,6 @@ const SimplePage = () => {
                                                                                                         className="rounded-circle img-fluid" />
                                                                                                 </div>
                                                                                             </div>
-                                                                                            <div
-                                                                                                className="avatar-group-item">
-                                                                                                <div className="avatar-xs">
-                                                                                                    <div
-                                                                                                        className="avatar-title rounded-circle bg-light text-primary">
-                                                                                                        A
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            </div>
                                                                                         </div>
                                                                                     </div>
                                                                                 </div>
@@ -1682,323 +1651,12 @@ const SimplePage = () => {
                                             </Col>
                                         </Row>
                                     </TabPane>
-                                    <TabPane tabId="2">
-                                        <Card>
-                                            <CardBody>
-                                                <h5 className="card-title mb-3">Activities</h5>
-                                                <div className="acitivity-timeline">
-                                                    <div className="acitivity-item d-flex">
-                                                        <div className="flex-shrink-0">
-                                                            <img src={avatar1} alt="" className="avatar-xs rounded-circle acitivity-avatar" />
-                                                        </div>
-                                                        <div className="flex-grow-1 ms-3">
-                                                            <h6 className="mb-1">Oliver Phillips <span
-                                                                className="badge bg-primary-subtle text-primary align-middle">New</span>
-                                                            </h6>
-                                                            <p className="text-muted mb-2">We talked about a project on linkedin.</p>
-                                                            <small className="mb-0 text-muted">Today</small>
-                                                        </div>
-                                                    </div>
-                                                    <div className="acitivity-item py-3 d-flex">
-                                                        <div className="flex-shrink-0 avatar-xs acitivity-avatar">
-                                                            <div className="avatar-title bg-success-subtle text-success rounded-circle"> N </div>
-                                                        </div>
-                                                        <div className="flex-grow-1 ms-3">
-                                                            <h6 className="mb-1">Nancy Martino <span
-                                                                className="badge bg-secondary-subtle text-secondary align-middle">In
-                                                                Progress</span></h6>
-                                                            <p className="text-muted mb-2"><i
-                                                                className="ri-file-text-line align-middle ms-2"></i>
-                                                                Create new project Buildng product</p>
-                                                            <div className="avatar-group mb-2">
-                                                                <Link to="#" className="avatar-group-item"
-                                                                    data-bs-toggle="tooltip" data-bs-placement="top"
-                                                                    title="" data-bs-original-title="Christi">
-                                                                    <img src={avatar4} alt=""
-                                                                        className="rounded-circle avatar-xs" />
-                                                                </Link>
-                                                                <Link to="#" className="avatar-group-item"
-                                                                    data-bs-toggle="tooltip" data-bs-placement="top"
-                                                                    title="" data-bs-original-title="Frank Hook">
-                                                                    <img src={avatar3} alt=""
-                                                                        className="rounded-circle avatar-xs" />
-                                                                </Link>
-                                                                <Link to="#" className="avatar-group-item"
-                                                                    data-bs-toggle="tooltip" data-bs-placement="top"
-                                                                    title="" data-bs-original-title=" Ruby">
-                                                                    <div className="avatar-xs">
-                                                                        <div className="avatar-title rounded-circle bg-light text-primary">R</div>
-                                                                    </div>
-                                                                </Link>
-                                                                <Link to="#" className="avatar-group-item"
-                                                                    data-bs-toggle="tooltip" data-bs-placement="top"
-                                                                    title="" data-bs-original-title="more">
-                                                                    <div className="avatar-xs">
-                                                                        <div className="avatar-title rounded-circle">
-                                                                            2+
-                                                                        </div>
-                                                                    </div>
-                                                                </Link>
-                                                            </div>
-                                                            <small className="mb-0 text-muted">Yesterday</small>
-                                                        </div>
-                                                    </div>
-                                                    <div className="acitivity-item py-3 d-flex">
-                                                        <div className="flex-shrink-0">
-                                                            <img src={avatar2} alt="" className="avatar-xs rounded-circle acitivity-avatar" />
-                                                        </div>
-                                                        <div className="flex-grow-1 ms-3">
-                                                            <h6 className="mb-1">Natasha Carey <span className="badge bg-success-subtle text-success align-middle">Completed</span>
-                                                            </h6>
-                                                            <p className="text-muted mb-2">Adding a new event with
-                                                                attachments</p>
-                                                            <Row >
-                                                                <Col xxl={4}>
-                                                                    <div className="row border border-dashed gx-2 p-2 mb-2">
-                                                                        <div className="col-4">
-                                                                            <img src={smallImage2}
-                                                                                alt="" className="img-fluid rounded" />
-                                                                        </div>
-
-                                                                        <div className="col-4">
-                                                                            <img src={smallImage3}
-                                                                                alt="" className="img-fluid rounded" />
-                                                                        </div>
-
-                                                                        <div className="col-4">
-                                                                            <img src={smallImage4}
-                                                                                alt="" className="img-fluid rounded" />
-                                                                        </div>
-
-                                                                    </div>
-
-                                                                </Col>
-                                                            </Row>
-                                                            <small className="mb-0 text-muted">25 Nov</small>
-                                                        </div>
-                                                    </div>
-                                                    <div className="acitivity-item py-3 d-flex">
-                                                        <div className="flex-shrink-0">
-                                                            <img src={avatar6} alt="" className="avatar-xs rounded-circle acitivity-avatar" />
-                                                        </div>
-                                                        <div className="flex-grow-1 ms-3">
-                                                            <h6 className="mb-1">Bethany Johnson</h6>
-                                                            <p className="text-muted mb-2">added a new member to velzon
-                                                                dashboard</p>
-                                                            <small className="mb-0 text-muted">19 Nov</small>
-                                                        </div>
-                                                    </div>
-                                                    <div className="acitivity-item py-3 d-flex">
-                                                        <div className="flex-shrink-0">
-                                                            <div className="avatar-xs acitivity-avatar">
-                                                                <div
-                                                                    className="avatar-title rounded-circle bg-danger-subtle text-danger">
-                                                                    <i className="ri-shopping-bag-line"></i>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex-grow-1 ms-3">
-                                                            <h6 className="mb-1">Your order is placed <span
-                                                                className="badge bg-danger-subtle text-danger align-middle ms-1">Out
-                                                                of Delivery</span></h6>
-                                                            <p className="text-muted mb-2">These customers can rest assured
-                                                                their order has been placed.</p>
-                                                            <small className="mb-0 text-muted">16 Nov</small>
-                                                        </div>
-                                                    </div>
-                                                    <div className="acitivity-item py-3 d-flex">
-                                                        <div className="flex-shrink-0">
-                                                            <img src={avatar7} alt=""
-                                                                className="avatar-xs rounded-circle acitivity-avatar" />
-                                                        </div>
-                                                        <div className="flex-grow-1 ms-3">
-                                                            <h6 className="mb-1">Lewis Pratt</h6>
-                                                            <p className="text-muted mb-2">They all have something to say
-                                                                beyond the words on the page. They can come across as
-                                                                casual or neutral, exotic or graphic. </p>
-                                                            <small className="mb-0 text-muted">22 Oct</small>
-                                                        </div>
-                                                    </div>
-                                                    <div className="acitivity-item py-3 d-flex">
-                                                        <div className="flex-shrink-0">
-                                                            <div className="avatar-xs acitivity-avatar">
-                                                                <div
-                                                                    className="avatar-title rounded-circle bg-info-subtle text-info">
-                                                                    <i className="ri-line-chart-line"></i>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex-grow-1 ms-3">
-                                                            <h6 className="mb-1">Monthly sales report</h6>
-                                                            <p className="text-muted mb-2"><span className="text-danger">2 days
-                                                                left</span> notification to submit the monthly sales
-                                                                report. <Link to="#" className="link-warning text-decoration-underline">Reports
-                                                                    Builder</Link></p>
-                                                            <small className="mb-0 text-muted">15 Oct</small>
-                                                        </div>
-                                                    </div>
-                                                    <div className="acitivity-item d-flex">
-                                                        <div className="flex-shrink-0">
-                                                            <img src={avatar8} alt=""
-                                                                className="avatar-xs rounded-circle acitivity-avatar" />
-                                                        </div>
-                                                        <div className="flex-grow-1 ms-3">
-                                                            <h6 className="mb-1">New ticket received <span
-                                                                className="badge bg-success-subtle text-success align-middle">Completed</span>
-                                                            </h6>
-                                                            <p className="text-muted mb-2">User <span
-                                                                className="text-secondary">Erica245</span> submitted a
-                                                                ticket.</p>
-                                                            <small className="mb-0 text-muted">26 Aug</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </CardBody>
-                                        </Card>
-                                    </TabPane>
-
-                                    <TabPane tabId="3">
-                                        <Card>
-                                            <CardBody>
-                                                <Row>
-                                                    {(projects || []).map((item, key) => (
-                                                        <Col xxl={3} sm={6} key={key}>
-                                                            <Card className={`profile-project-card shadow-none profile-project-${item.cardBorderColor}`}>
-                                                                <CardBody className="p-4">
-                                                                    <div className="d-flex">
-                                                                        <div className="flex-grow-1 text-muted overflow-hidden">
-                                                                            <h5 className="fs-14 text-truncate"><Link to="#"
-                                                                                className="text-body">{item.title}</Link>
-                                                                            </h5>
-                                                                            <p className="text-muted text-truncate mb-0">Last
-                                                                                Update : <span
-                                                                                    className="fw-semibold text-body">{item.updatedTime}</span></p>
-                                                                        </div>
-                                                                        <div className="flex-shrink-0 ms-2">
-                                                                            <div className={`badge bg-${item.badgeClass}-subtle text-${item.badgeClass} fs-10`}>
-                                                                                {item.badgeText}</div>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div className="d-flex mt-4">
-                                                                        <div className="flex-grow-1">
-                                                                            <div className="d-flex align-items-center gap-2">
-                                                                                <div>
-                                                                                    <h5 className="fs-12 text-muted mb-0">
-                                                                                        Members :</h5>
-                                                                                </div>
-                                                                                <div className="avatar-group">
-                                                                                    {(item.member || []).map((subitem, key) => (
-                                                                                        <div className="avatar-group-item" key={key}>
-                                                                                            <div className="avatar-xs">
-                                                                                                <img src={subitem.img} alt="" className="rounded-circle img-fluid" />
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    ))}
-
-                                                                                    {(item.memberName || []).map((element, key) => (
-                                                                                        <div className="avatar-group-item" key={key}>
-                                                                                            <div className="avatar-xs">
-                                                                                                <div
-                                                                                                    className="avatar-title rounded-circle bg-light text-primary">
-                                                                                                    {element.memberText}
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    ))}
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </CardBody>
-                                                            </Card>
-                                                        </Col>
-                                                    ))}
-                                                    <Col lg={12}>
-                                                        <Pagination listClassName="justify-content-center" className="pagination-separated mb-0">
-                                                            <PaginationItem disabled> <PaginationLink to="#"> <i className="mdi mdi-chevron-left" /> </PaginationLink> </PaginationItem>
-                                                            <PaginationItem active> <PaginationLink to="#"> 1 </PaginationLink> </PaginationItem>
-                                                            <PaginationItem> <PaginationLink to="#"> 2 </PaginationLink> </PaginationItem>
-                                                            <PaginationItem> <PaginationLink to="#"> 3 </PaginationLink> </PaginationItem>
-                                                            <PaginationItem> <PaginationLink to="#"> 4 </PaginationLink> </PaginationItem>
-                                                            <PaginationItem> <PaginationLink to="#"> 5 </PaginationLink> </PaginationItem>
-                                                            <PaginationItem> <PaginationLink to="#"> <i className="mdi mdi-chevron-right" /> </PaginationLink> </PaginationItem>
-                                                        </Pagination>
-                                                    </Col>
-                                                </Row>
-                                            </CardBody>
-                                        </Card>
-                                    </TabPane>
-
                                     <TabPane tabId="4">
                                         <Card>
                                             <CardBody>
                                                 <div className="d-flex align-items-center mb-4">
                                                     <h5 className="card-title flex-grow-1 mb-0">Documents</h5>
-                                                    <div className="flex-shrink-0">
-                                                        <Input className="form-control d-none" type="file" id="formFile" />
-                                                        <Label htmlFor="formFile" className="btn btn-danger"><i className="ri-upload-2-fill me-1 align-bottom"></i> Upload
-                                                            File</Label>
-                                                    </div>
                                                 </div>
-                                                <Row>
-                                                    <Col lg={12}>
-                                                        <div className="table-responsive">
-                                                            <Table className="table-borderless align-middle mb-0">
-                                                                <thead className="table-light">
-                                                                    <tr>
-                                                                        <th scope="col">File Name</th>
-                                                                        <th scope="col">Type</th>
-                                                                        <th scope="col">Size</th>
-                                                                        <th scope="col">Upload Date</th>
-                                                                        <th scope="col">Action</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {(documents || []).map((item, key) => (
-                                                                        <tr key={key}>
-                                                                            <td>
-                                                                                <div className="d-flex align-items-center">
-                                                                                    <div className="avatar-sm">
-                                                                                        <div
-                                                                                            className={`avatar-title bg-${item.iconBackgroundClass}-subtle text-${item.iconBackgroundClass} rounded fs-20`}>
-                                                                                            <i className={item.icon}></i>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <div className="ms-3 flex-grow-1">
-                                                                                        <h6 className="fs-14 mb-0"><Link to="#" className="text-body">{item.fileName}</Link>
-                                                                                        </h6>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </td>
-                                                                            <td>{item.fileType}</td>
-                                                                            <td>{item.fileSize}</td>
-                                                                            <td>{item.updatedDate}</td>
-                                                                            <td>
-                                                                                <UncontrolledDropdown direction='start'>
-                                                                                    <DropdownToggle tag="a" className="btn btn-light btn-icon" id="dropdownMenuLink15" role="button">
-                                                                                        <i className="ri-equalizer-fill"></i>
-                                                                                    </DropdownToggle>
-                                                                                    <DropdownMenu>
-                                                                                        <DropdownItem><i className="ri-eye-fill me-2 align-middle text-muted" />View</DropdownItem>
-                                                                                        <DropdownItem><i className="ri-download-2-fill me-2 align-middle text-muted" />Download</DropdownItem>
-                                                                                        <DropdownItem divider />
-                                                                                        <DropdownItem><i className="ri-delete-bin-5-line me-2 align-middle text-muted" />Delete</DropdownItem>
-                                                                                    </DropdownMenu>
-                                                                                </UncontrolledDropdown>
-                                                                            </td>
-                                                                        </tr>
-                                                                    ))}
-                                                                </tbody>
-                                                            </Table>
-                                                        </div>
-                                                        <div className="text-center mt-3">
-                                                            <Link to="#" className="text-success "><i
-                                                                className="mdi mdi-loading mdi-spin fs-20 align-middle me-2"></i>
-                                                                Load more </Link>
-                                                        </div>
-                                                    </Col>
-                                                </Row>
                                             </CardBody>
                                         </Card>
                                     </TabPane>

@@ -1,39 +1,37 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { fetchRooms } from "../../slices/chat/thunk";
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchChatRooms } from '../../slices/chat/thunk';
 
-const ChatList = ({ setRoomId }) => {
+const ChatList = ({ setRoomId, setDoctorId, selectedRoomId }) => {
   const dispatch = useDispatch();
-  const [rooms, setRooms] = useState([]);
-  const [activeRoomId, setActiveRoomId] = useState(null); // ⬅️ Track active room
+  const chatRooms = useSelector((state) => state.Chat.chatRooms);
 
   useEffect(() => {
-    const loadRooms = async () => {
-      const fetchedRooms = await dispatch(fetchRooms());
-      setRooms(fetchedRooms || []);
-    };
-    loadRooms();
+    dispatch(fetchChatRooms());
   }, [dispatch]);
 
-  const handleRoomClick = (roomId) => {
-    setActiveRoomId(roomId);   // ⬅️ Set active
-    setRoomId(roomId);         // ⬅️ Pass to parent
+  const handleRoomSelect = (room) => {
+    setRoomId(room.id);
+    setDoctorId(room.doctor);
   };
 
   return (
     <div className="chat-list p-3">
       <ul className="list-group gap-2 d-flex flex-column">
-        {rooms.length === 0 ? (
+        {!chatRooms || chatRooms.length === 0 ? (
           <li className="list-group-item text-muted">No rooms available</li>
         ) : (
-          rooms.map((room, index) => (
+          chatRooms.map((room, index) => (
             <li
               key={room.id}
-              onClick={() => handleRoomClick(room.id)}
+              onClick={() => handleRoomSelect(room)}
               className={`list-group-item list-group-item-action ${
-                activeRoomId === room.id ? "active" : ""
+                selectedRoomId === room.id ? 'active' : ''
               }`}
-              style={{ cursor: "pointer" }}
+              style={{ 
+                cursor: 'pointer',
+                backgroundColor: selectedRoomId === room.id ? 'black' : 'transparent'
+              }}
             >
               Room #{index + 1}
             </li>

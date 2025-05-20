@@ -204,12 +204,6 @@ export const DELETE_FOLDER = "/delete/folder";
 export const ADD_NEW_FOLDER = "/add/folder";
 export const UPDATE_FOLDER = "/update/folder";
 
-// File
-export const GET_FILES = "/file";
-export const DELETE_FILE = "/delete/file";
-export const ADD_NEW_FILE = "/add/file";
-export const UPDATE_FILE = "/update/file";
-
 // To do
 export const GET_TODOS = "/todo";
 export const DELETE_TODO = "/delete/todo";

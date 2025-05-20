@@ -1,98 +1,42 @@
-import axios from "axios";
+// src/redux/actions/chat.js
+import { sendMessage, listenToMessages } from "../../helpers/chat";
 import {
-  SET_SOCKET,
-  SET_ROOM_ID,
   ADD_MESSAGE,
+  SET_ROOM_ID,
   CLEAR_MESSAGES,
-  SET_MESSAGES,
 } from "./chat.types";
-import Cookies from "js-cookie";
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
-let socketInstance = null;
-
-// Connect to WebSocket
-export const connectToChatRoom = (roomId) => {
-  return (dispatch, getState) => {
-    const userData = Cookies.get("user");
-    const user = JSON.parse(userData);
-    const socketUrl = `ws://master.madical-cluster-test.4tvfug.eun1.cache.amazonaws.com/ws/chat/${roomId}/?user_id=${user?.id}`;
-
-    const socket = new WebSocket(socketUrl);
-
-    socket.onopen = () => {
-      console.log("WebSocket connected");
-      // dispatch({ type: SET_SOCKET, payload: socket });
-      dispatch({ type: SET_SOCKET, payload: "connected" });
-      dispatch({ type: SET_ROOM_ID, payload: roomId });
-    };
-    socket.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
-
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      dispatch({ type: ADD_MESSAGE, payload: data });
-    };
-
-    socket.onclose = () => {
-      console.log("WebSocket closed");
-      dispatch({ type: SET_SOCKET, payload: null });
-    };
-
-    socketInstance = socket;
-  };
-};
-
-// Send message via WebSocket and save via REST
-export const sendMessage = (messageObj) => {
+export const startChatListener = (roomId) => {
   return (dispatch) => {
-    if (socketInstance && socketInstance.readyState === WebSocket.OPEN) {
-      socketInstance.send(JSON.stringify(messageObj));
-    } else {
-      console.error("WebSocket is not open. Trying to reconnect...");
-    }
+    dispatch({ type: SET_ROOM_ID, payload: roomId });
+    dispatch({ type: CLEAR_MESSAGES });
+
+    listenToMessages(roomId, (newMessage) => {
+      dispatch({ type: ADD_MESSAGE, payload: newMessage });
+    });
   };
 };
 
-// Fetch old messages from API
-export const fetchMessages = (roomId) => {
-  const token = Cookies.get("authUser");
-  return async (dispatch) => {
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/messages/${roomId}/`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const messages = response.data;
-      dispatch({ type: SET_MESSAGES, payload: messages });
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    }
+export const sendChatMessage = (roomId, messageData) => {
+  return async () => {
+    await sendMessage(roomId, messageData);
   };
 };
 
-// Fetch list of chat rooms
-export const fetchRooms = () => {
-  const token = Cookies.get("authUser");
+export const fetchChatRooms = () => {
   return async (dispatch) => {
+    const token = Cookies.get('authUser');
     try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/rooms/`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const rooms = response;
-      return rooms;
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/rooms/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      dispatch({ type: 'SET_CHAT_ROOMS', payload: response });
     } catch (error) {
-      console.error("Error fetching chat rooms:", error);
-      return [];
+      console.error('Error fetching chat rooms:', error);
     }
   };
 };

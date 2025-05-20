@@ -97,7 +97,7 @@ const BasicAction = () => {
                                                     <Link to="/#" style={{ color: "#495057" }}>Account</Link>
                                                 </li>
                                             </ul>
-                                            <p style={{ fontFamily: "Roboto, sans-serif", fontSize: "14px", color: "#98a6ad", margin: "0px" }}>2022 Velzon. Design & Develop by Themesbrand</p>
+                                            <p style={{ fontFamily: "Roboto, sans-serif", fontSize: "14px", color: "#98a6ad", margin: "0px" }}>2022 Velzon. Design & Develop by Basit</p>
                                         </div>
                                     </div>
                                 </td>

@@ -35,20 +35,19 @@ import { createSelector } from "reselect";
 const Login = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState({ text: '', type: '' }); // type can be 'success' or 'error'
   const selectLayoutState = (state) => state.Login;
   const selectLayoutProperties = createSelector(
     selectLayoutState,
     (layout) => ({
       user: layout.user,
       errorMsg: layout.errorMsg,
-      loading: layout.loading,
       error: layout.error,
     })
   );
   // Inside your component
-  const { user, errorMsg, loading, error } = useSelector(
-    selectLayoutProperties
-  );
+  const { user, errorMsg, error } = useSelector(selectLayoutProperties);
 
   const [passwordShow, setPasswordShow] = useState(false);
 
@@ -66,6 +65,8 @@ const Login = (props) => {
     }),
     onSubmit: async (values) => {
       try {
+        setIsLoading(true);
+        setMessage({ text: '', type: '' }); // Clear previous messages
         const hashedPassword = CryptoJS.SHA256(values.password).toString(
           CryptoJS.enc.Base64
         );
@@ -83,12 +84,31 @@ const Login = (props) => {
           }
         );
         const data = await response.json();
+        
+        if (response.ok) {
+          setMessage({ text: data.message || 'Login successful!', type: 'success' });
           dispatch(loginUser(data, navigate));
+        } else {
+          setMessage({ text: data.message || 'Login failed. Please try again.', type: 'error' });
+        }
       } catch (error) {
         console.log(error);
+        setMessage({ text: 'An error occurred. Please try again.', type: 'error' });
+      } finally {
+        setIsLoading(false);
       }
     },
   });
+
+  // Clear message after 5 seconds
+  useEffect(() => {
+    if (message.text) {
+      const timer = setTimeout(() => {
+        setMessage({ text: '', type: '' });
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
 
   useEffect(() => {
     if (errorMsg) {
@@ -121,6 +141,11 @@ const Login = (props) => {
               <Col md={8} lg={6} xl={5}>
                 <Card className="mt-4">
                   <CardBody className="p-4">
+                    {message.text && (
+                      <Alert color={message.type === 'success' ? 'success' : 'danger'}>
+                        {message.text}
+                      </Alert>
+                    )}
                     {errorMsg && error ? (
                       <Alert color="danger">{error}</Alert>
                     ) : null}
@@ -224,17 +249,20 @@ const Login = (props) => {
                         <div className="mt-4">
                           <Button
                             color="success"
-                            disabled={error ? null : loading ? true : false}
+                            disabled={error ? null : isLoading ? true : false}
                             className="btn btn-success w-100"
                             type="submit"
                           >
-                            {loading ? (
-                              <Spinner size="sm" className="me-2">
-                                {" "}
-                                Loading...{" "}
-                              </Spinner>
-                            ) : null}
-                            Sign In
+                            {isLoading ? (
+                              <>
+                                <Spinner size="sm" className="me-2">
+                                  {" "}
+                                </Spinner>
+                                Loading...
+                              </>
+                            ) : (
+                              "Sign In"
+                            )}
                           </Button>
                         </div>
                       </Form>

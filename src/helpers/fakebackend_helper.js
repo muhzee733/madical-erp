@@ -343,9 +343,6 @@ export const updateFolder = (folder) => api.put(url.UPDATE_FOLDER, folder);
 
 // File
 export const getFiles = (file) => api.get(url.GET_FILES, file);
-export const deleteFile = (file) => api.delete(url.DELETE_FILE, { headers: { file } });
-export const addNewFile = (file) => api.create(url.ADD_NEW_FILE, file);
-export const updateFile = (file) => api.put(url.UPDATE_FILE, file);
 
 // To Do
 export const getTodos = (todo) => api.get(url.GET_TODOS, todo);

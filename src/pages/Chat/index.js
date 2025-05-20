@@ -10,20 +10,15 @@ import {
   TabContent,
   TabPane,
 } from "reactstrap";
-import axios from "axios";
-import { Link } from "react-router-dom";
 import classnames from "classnames";
 import SimpleBar from "simplebar-react";
 import ChatBox from "./ChatBox";
 import Cookies from "js-cookie";
-//redux
-import { useSelector, useDispatch } from "react-redux";
+
 
 import avatar2 from "../../assets/images/users/avatar-2.jpg";
-import userDummayImage from "../../assets/images/users/user-dummy-img.jpg";
 
 //Import Scrollbar
-import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
 import ChatList from "./ChatList";
 
@@ -38,8 +33,8 @@ const Chat = () => {
   const userData = Cookies.get("user") ? JSON.parse(Cookies.get("user")) : {};
   const [Chat_Box_Username, setChat_Box_Username] = useState(userData);
   const [Chat_Box_Image, setChat_Box_Image] = useState(avatar2);
-  const [roomIds, setRoomId] = useState(null);
-
+  const [selectedRoomId, setSelectedRoomId] = useState(null);
+  const [selectedDoctorId, setSelectedDoctorId] = useState(null);
   document.title = "Chat | ProMedicine";
 
   return (
@@ -115,7 +110,11 @@ const Chat = () => {
                         className="list-unstyled chat-list chat-user-list mb-0 users-list"
                         id="channelList"
                       >
-                        <ChatList setRoomId={setRoomId} />
+                        <ChatList 
+                          setRoomId={setSelectedRoomId} 
+                          setDoctorId={setSelectedDoctorId}
+                          selectedRoomId={selectedRoomId}
+                        />
                       </ul>
                     </div>
                   </SimpleBar>
@@ -127,12 +126,19 @@ const Chat = () => {
               <div className="chat-content d-lg-flex">
                 <div className="w-100 overflow-hidden position-relative">
                   <div className="position-relative">
-                    <ChatBox
-                      roomId={roomIds}
-                      Chat_Box_Image={Chat_Box_Image}
-                      Chat_Box_Username={Chat_Box_Username}
-                      userDummayImage="/assets/images/user.png"
-                    />
+                    {selectedRoomId ? (
+                      <ChatBox
+                        roomId={selectedRoomId}
+                        doctorId={selectedDoctorId}
+                        Chat_Box_Image={Chat_Box_Image}
+                        Chat_Box_Username={Chat_Box_Username}
+                        userDummayImage="/assets/images/user.png"
+                      />
+                    ) : (
+                      <div className="text-center text-muted mt-5">
+                        <h6>No room selected. Please select a chat room to start messaging.</h6>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
