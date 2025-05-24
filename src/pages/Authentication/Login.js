@@ -71,7 +71,7 @@ const Login = (props) => {
           CryptoJS.enc.Base64
         );
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/login/`,
+          `${process.env.REACT_APP_API_URL}/users/login/`,
           {
             method: "POST",
             headers: {

@@ -24,6 +24,7 @@ import scheduleReducer from './appointmentSchedule/scheduleSlice';
 import appointmentReducer from './appointments/reducer';
 import bookingCartSlice from './cart/reducer';
 import orderSlice from './OrderAppointment/reducer';
+import prescriptionReducer from './prescriptions/slice';
 
 const rootReducer = combineReducers({
     Layout: LayoutReducer,
@@ -39,6 +40,7 @@ const rootReducer = combineReducers({
     Appointment: appointmentReducer,
     Cart: bookingCartSlice,
     OrderAppointment: orderSlice,
+    prescriptions: prescriptionReducer,
 });
 
 export default rootReducer;

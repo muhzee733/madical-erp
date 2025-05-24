@@ -26,15 +26,13 @@ const PreQuestions = () => {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
 
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
-  const [countdown, setCountdown] = useState(10);
   const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
         const res = await axios.get(
-          `${process.env.REACT_APP_API_URL}/questions/`
+          `${process.env.REACT_APP_API_URL}/questions/questions/  `
         );
         setQuestions(res);
       } catch (err) {

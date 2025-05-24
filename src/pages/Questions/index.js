@@ -86,7 +86,7 @@ const Questions = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/questions/`
+          `${process.env.REACT_APP_API_URL}/questions/questions/`
         );
         setQuestions(response);
       } catch (error) {

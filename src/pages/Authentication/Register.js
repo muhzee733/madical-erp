@@ -10,6 +10,7 @@ import {
   Label,
   Form,
   FormFeedback,
+  Spinner,
 } from "reactstrap";
 import CryptoJS from "crypto-js";
 
@@ -80,10 +81,11 @@ const Register = () => {
     registrationError: accountState.registrationError,
     success: accountState.success,
     error: accountState.error,
+    loading: accountState.loading,
   }));
 
   // Inside your component
-  const { registrationError, success, error } = useSelector(registerData);
+  const { registrationError, success, error, loading } = useSelector(registerData);
 
   useEffect(() => {
     dispatch(apiError(""));
@@ -313,8 +315,16 @@ const Register = () => {
                           <button
                             className="btn btn-success w-100"
                             type="submit"
+                            disabled={loading}
                           >
-                            Sign Up
+                            {loading ? (
+                              <>
+                                <Spinner size="sm" className="me-2" />
+                                Signing Up...
+                              </>
+                            ) : (
+                              "Sign Up"
+                            )}
                           </button>
                         </div>
                       </Form>

@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 
 // Thunk
 export const getAppointments = createAsyncThunk(
-  "appointments/list",
+  "/all",
   async (_, { rejectWithValue }) => { 
     try {
       const token = Cookies.get('authUser');

@@ -342,7 +342,7 @@ export const addNewFolder = (folder) => api.create(url.ADD_NEW_FOLDER, folder);
 export const updateFolder = (folder) => api.put(url.UPDATE_FOLDER, folder);
 
 // File
-export const getFiles = (file) => api.get(url.GET_FILES, file);
+export const GET_FILES = "/api/files";
 
 // To Do
 export const getTodos = (todo) => api.get(url.GET_TODOS, todo);

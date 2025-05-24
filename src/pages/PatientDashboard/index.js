@@ -1,15 +1,15 @@
 import React from "react";
 import { Col, Container, Row, Card, CardBody } from "reactstrap";
 import BreadCrumb from "../../Components/Common/BreadCrumb";
-import AdminAuthWrapper from "../../Routes/AdminAuthWrapper";
+import PatientAuthWrapper from "../../Routes/PatientAuthWrapper";
 import AppointmentTable from "../../Components/Common/AppointmentTable";
 import { useSelector, useDispatch } from "react-redux";
 import { getOrders } from "../../slices/OrderAppointment/thunk";
 import { useEffect } from "react";
 
-const AdminDashboard = () => {
+const PatientDashboard = () => {
   const dispatch = useDispatch();
-  document.title = "Admin Dashboard | Velzon - React Admin & Dashboard Template";
+  document.title = "Patient Dashboard | Velzon - React Admin & Dashboard Template";
 
   useEffect(() => {
     dispatch(getOrders());
@@ -24,14 +24,14 @@ const AdminDashboard = () => {
   return (
     <React.Fragment>
       <div className="page-content">
-        <AdminAuthWrapper>
+        <PatientAuthWrapper>
           <Container fluid>
-            <BreadCrumb title="Admin Dashboard" pageTitle="Dashboard" />
+            <BreadCrumb title="Patient Dashboard" pageTitle="Dashboard" />
             <Row>
               <Col>
                 <Card>
                   <CardBody>
-                    <h4 className="card-title mb-4">All Appointments</h4>
+                    <h4 className="card-title mb-4">My Appointments</h4>
                     <AppointmentTable 
                       orders={orders} 
                       loading={ordersLoading} 
@@ -42,10 +42,10 @@ const AdminDashboard = () => {
               </Col>
             </Row>
           </Container>
-        </AdminAuthWrapper>
+        </PatientAuthWrapper>
       </div>
     </React.Fragment>
   );
 };
 
-export default AdminDashboard;
+export default PatientDashboard; 

@@ -62,10 +62,17 @@ const MiniAppointment = () => {
   useEffect(() => {
     if (appointments?.doctors?.length) {
       const newActiveTabs = {};
+      const today = dayjs().startOf('day');
 
       appointments.doctors.forEach((doctor) => {
-        const dates = [...new Set(doctor.appointments.map((a) => a.date))];
-        newActiveTabs[doctor.id] = dates[0];
+        const futureDates = doctor.appointments
+          .map((a) => a.date)
+          .filter(date => dayjs(date).isAfter(today) || dayjs(date).isSame(today, 'day'));
+        
+        const uniqueDates = [...new Set(futureDates)];
+        if (uniqueDates.length > 0) {
+          newActiveTabs[doctor.id] = uniqueDates[0];
+        }
       });
 
       setActiveDateTab(newActiveTabs);
@@ -109,8 +116,16 @@ const MiniAppointment = () => {
     <div>
       <Row>
         {appointments?.doctors?.map((doctor) => {
+          const today = dayjs().startOf('day');
           const uniqueDates = [
-            ...new Set(doctor.appointments.map((a) => a.date)),
+            ...new Set(
+              doctor.appointments
+                .filter(appointment => 
+                  dayjs(appointment.date).isAfter(today) || 
+                  dayjs(appointment.date).isSame(today, 'day')
+                )
+                .map((a) => a.date)
+            ),
           ];
 
           return (
@@ -142,7 +157,7 @@ const MiniAppointment = () => {
                       ))
                     ) : (
                       <Col sm="12" className="text-center">
-                        <CardText>No time schedule available</CardText>
+                        <CardText>No future appointments available</CardText>
                       </Col>
                     )}
                   </Nav>
@@ -160,7 +175,9 @@ const MiniAppointment = () => {
                               .filter(
                                 (appointment) =>
                                   appointment.date === date &&
-                                  !appointment.is_booked
+                                  !appointment.is_booked &&
+                                  (dayjs(appointment.date).isAfter(today) || 
+                                   dayjs(appointment.date).isSame(today, 'day'))
                               )
                               .map((appointment) => (
                                 <Col md={4} key={appointment.id}>

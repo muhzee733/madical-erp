@@ -17,7 +17,7 @@ const DoctorScheduleTime = () => {
       }
 
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/availabilities/list/`, {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/appointments/availabilities/list/`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${userAuthToken}`,

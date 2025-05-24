@@ -16,12 +16,13 @@ const PatientAuthWrapper = ({ children }) => {
     }
 
     axios
-      .get(`${process.env.REACT_APP_API_URL}/dashboard/doctor/`, {
+      .get(`${process.env.REACT_APP_API_URL}/users/dashboard/doctor/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((res) => {
+        console.log(res, 'res')
         if (res?.user?.role === "doctor") {
           setAuthorized(true);
         } else {

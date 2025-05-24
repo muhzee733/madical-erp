@@ -13,7 +13,7 @@ import {
 export const registerUser = (user, navigator) => async (dispatch) => {
   try {
     const response = await axios.post(
-      `${process.env.REACT_APP_API_URL}/register/`,
+      `${process.env.REACT_APP_API_URL}/users/register/`,
       user
     );
     if (response.success === true) {

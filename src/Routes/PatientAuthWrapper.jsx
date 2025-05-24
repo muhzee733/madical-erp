@@ -16,7 +16,7 @@ const PatientAuthWrapper = ({ children }) => {
     }
 
     axios
-      .get(`${process.env.REACT_APP_API_URL}/dashboard/patient/`, {
+      .get(`${process.env.REACT_APP_API_URL}/users/dashboard/patient/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -43,23 +43,17 @@ const Navdata = () => {
     setRole(user?.role || null);
   }, [currentState, navigate]);
 
+  const handleMenuClick = (e, state) => {
+    e.preventDefault();
+    setIsDashboard(state === "Dashboard");
+    setCurrentState(state);
+    updateIconSidebar(e);
+  };
+
   const commonMenuItems = [
     {
       label: "Menu",
       isHeader: true,
-    },
-    {
-      id: "dashboard",
-      label: "Dashboards",
-      icon: "bx bxs-dashboard",
-      link: "/#",
-      stateVariables: isDashboard,
-      click: (e) => {
-        e.preventDefault();
-        setIsDashboard(true);
-        setCurrentState("Dashboard");
-        updateIconSidebar(e);
-      },
     },
     {
       id: "chatroom",
@@ -67,64 +61,80 @@ const Navdata = () => {
       icon: "bx bx-message-rounded-dots",
       link: "/chatroom",
       stateVariables: currentState === "Chat",
-      click: (e) => {
-        e.preventDefault();
-        setIsDashboard(false);
-        setCurrentState("Chat");
-        updateIconSidebar(e);
-      },
+      click: (e) => handleMenuClick(e, "Chat"),
     },
   ];
 
-  const patientMenu = [
-    // {
-    //   id: "appointment",
-    //   label: "Appointments",
-    //   icon: "bx bx-calendar",
-    //   link: "/appointment",
-    //   click: (e) => {
-    //     e.preventDefault();
-    //     setCurrentState("Appointment");
-    //   },
-    // },
-  ];
-
-  const doctorMenu = [
-    {
-      id: "appointment",
-      label: "Appointments",
-      icon: "bx bx-calendar",
-      link: "/dashboard/doctor/appointment",
-      click: (e) => {
-        e.preventDefault();
-        setCurrentState("Appointment");
+  const roleBasedMenus = {
+    patient: [
+      {
+        id: "dashboard",
+        label: "Patient Dashboard",
+        icon: "bx bxs-dashboard",
+        link: "/dashboard/patient",
+        stateVariables: isDashboard,
+        click: (e) => {
+          e.preventDefault();
+          navigate("/dashboard/patient");
+          setIsDashboard(true);
+          setCurrentState("Dashboard");
+        },
       },
-    },
-  ];
-
-  const adminMenu = [
-    {
-      id: "questions",
-      label: "Questions",
-      icon: "bx bx-help-circle",
-      link: "/dashboard/admin/questions",
-      click: (e) => {
-        e.preventDefault();
-        setCurrentState("Questions");
+      {
+        id: "appointment",
+        label: "Appointments",
+        icon: "bx bx-calendar",
+        link: "/dashboard/patient/appointment",
+        click: (e) => handleMenuClick(e, "Appointment"),
       },
-    },
-  ];
+    ],
+    doctor: [
+      {
+        id: "dashboard",
+        label: "Doctor Dashboard",
+        icon: "bx bxs-dashboard",
+        link: "/dashboard/doctor",
+        stateVariables: isDashboard,
+        click: (e) => {
+          e.preventDefault();
+          navigate("/dashboard/doctor");
+          setIsDashboard(true);
+          setCurrentState("Dashboard");
+        },
+      },
+      {
+        id: "appointment",
+        label: "Appointments",
+        icon: "bx bx-calendar",
+        link: "/dashboard/doctor/appointment",
+        click: (e) => handleMenuClick(e, "Appointment"),
+      },
+    ],
+    admin: [
+      {
+        id: "dashboard",
+        label: "Admin Dashboard",
+        icon: "bx bxs-dashboard",
+        link: "/dashboard/admin",
+        stateVariables: isDashboard,
+        click: (e) => {
+          e.preventDefault();
+          navigate("/dashboard/admin");
+          setIsDashboard(true);
+          setCurrentState("Dashboard");
+        },
+      },
+      {
+        id: "questions",
+        label: "Questions",
+        icon: "bx bx-help-circle",
+        link: "/dashboard/admin/questions",
+        click: (e) => handleMenuClick(e, "Questions"),
+      },
+    ],
+  };
 
-  let roleBasedMenu = [];
-
-  if (role === "patient") {
-    roleBasedMenu = patientMenu;
-  } else if (role === "doctor") {
-    roleBasedMenu = doctorMenu;
-  } else if (role === "admin") {
-    roleBasedMenu = adminMenu;
-  }
-
+  const roleBasedMenu = roleBasedMenus[role] || [];
   const finalMenuItems = [...commonMenuItems, ...roleBasedMenu];
 
   return <>{finalMenuItems}</>;

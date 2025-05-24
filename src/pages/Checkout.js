@@ -39,16 +39,15 @@ const EcommerceCheckout = () => {
   const handleCompleteOrder = async () => {
     try {
       setIsProcessing(true);
-      const orderResponse = await axios.post(`${process.env.REACT_APP_API_URL}/create_order/`, {
+      const orderResponse = await axios.post(`${process.env.REACT_APP_API_URL}/orders/create/`, {
         appointmentId: appointmentId
       }, {
         headers: {
           Authorization: `Bearer ${token}`,
         }
       });
-      console.log(orderResponse, 'orderResponse')
       const { orderId } = orderResponse;
-      const stripeResponse = await axios.post(`${process.env.REACT_APP_API_URL}/create-stripe-session/`, {
+      const stripeResponse = await axios.post(`${process.env.REACT_APP_API_URL}/orders/create-stripe-session/`, {
         orderId: orderId,
       });
       console.log(stripeResponse, 'stripeResponse')

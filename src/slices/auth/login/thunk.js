@@ -20,6 +20,7 @@ export const loginUser = (data, navigate) => async (dispatch) => {
         })
       );
       const role = data.user?.role;
+      console.log(role, 'role')
       switch (role) {
         case "patient":
           navigate("/dashboard/patient");
