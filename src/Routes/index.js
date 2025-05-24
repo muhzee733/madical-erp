@@ -8,6 +8,7 @@ import VerticalLayout from "../Layouts/index";
 //routes
 import { authProtectedRoutes, publicRoutes } from "./allRoutes";
 import { AuthProtected } from './AuthProtected';
+import AppointmentDetails from "../pages/Appointment/AppointmentDetails";
 
 const Index = () => {
     return (
@@ -41,6 +42,18 @@ const Index = () => {
                         />
                     ))}
                 </Route>
+
+                <Route
+                    path="/appointment/:id"
+                    element={
+                        <AuthProtected>
+                            <VerticalLayout>
+                                <AppointmentDetails />
+                            </VerticalLayout>
+                        </AuthProtected>
+                    }
+                    exact={true}
+                />
             </Routes>
         </React.Fragment>
     );

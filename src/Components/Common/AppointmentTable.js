@@ -12,9 +12,13 @@ const formatTime = (time) => {
 };
 
 const AppointmentTable = ({ orders, loading, error }) => {
-
   const navigate = useNavigate();
-    const columns = useMemo(
+  
+  const handleViewAppointment = (appointmentId) => {
+    navigate(`/appointment/${appointmentId}`);
+  };
+
+  const columns = useMemo(
     () => [
       {
         header: "#",
@@ -44,12 +48,6 @@ const AppointmentTable = ({ orders, loading, error }) => {
         cell: (cell) => <span>{formatTime(cell.getValue())}</span>,
       },
       {
-        header: "Price",
-        accessorKey: "amount",
-        enableColumnFilter: false,
-        cell: (cell) => <span>{cell.getValue()} USD</span>,
-      },
-      {
         header: "Status",
         accessorKey: "status",
         enableColumnFilter: false,
@@ -64,7 +62,19 @@ const AppointmentTable = ({ orders, loading, error }) => {
 
           return <span className={`badge bg-${badgeColor}`}>{status}</span>;
         },
-      }      
+      },
+      {
+        header: "View",
+        accessorKey: "",
+        cell: (cell) => (
+          <button
+            className="btn btn-sm btn-primary"
+            onClick={() => handleViewAppointment(cell.row.original.id)}
+          >
+            View
+          </button>
+        ),
+      }
     ],
     []
   );

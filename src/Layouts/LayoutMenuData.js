@@ -69,7 +69,7 @@ const Navdata = () => {
     patient: [
       {
         id: "dashboard",
-        label: "Patient Dashboard",
+        label: "Dashboard",
         icon: "bx bxs-dashboard",
         link: "/dashboard/patient",
         stateVariables: isDashboard,
@@ -91,7 +91,7 @@ const Navdata = () => {
     doctor: [
       {
         id: "dashboard",
-        label: "Doctor Dashboard",
+        label: "Dashboard",
         icon: "bx bxs-dashboard",
         link: "/dashboard/doctor",
         stateVariables: isDashboard,
@@ -113,7 +113,7 @@ const Navdata = () => {
     admin: [
       {
         id: "dashboard",
-        label: "Admin Dashboard",
+        label: "Dashboard",
         icon: "bx bxs-dashboard",
         link: "/dashboard/admin",
         stateVariables: isDashboard,
