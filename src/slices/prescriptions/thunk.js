@@ -31,6 +31,20 @@ export const getPrescription = createAsyncThunk(
   }
 );
 
+export const searchPrescriptions = createAsyncThunk(
+  "prescriptions/search",
+  async (searchTerm, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/prescriptions/list/?search=${searchTerm}`
+      );
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response || error.message);
+    }
+  }
+);
+
 export const downloadPrescriptionPDF = createAsyncThunk(
   "prescriptions/downloadPDF",
   async (prescriptionId, { rejectWithValue }) => {

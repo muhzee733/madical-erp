@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   createPrescription,
   getPrescription,
+  searchPrescriptions,
   downloadPrescriptionPDF,
 } from "../slices/prescriptions/thunk";
 import { Spinner } from "reactstrap";
+import debounce from "lodash/debounce";
 
 const PrescriptionForm = () => {
   const dispatch = useDispatch();
-  const { prescriptions, loading, success, error, downloadingIds } = useSelector(
+  const { prescriptions, searchResults, loading, success, error, downloadingIds } = useSelector(
     (state) => state.prescriptions
   );
   console.log(prescriptions, "prescriptions");
@@ -40,6 +42,18 @@ const PrescriptionForm = () => {
       },
     ],
   });
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Create a debounced search function
+  const debouncedSearch = useCallback(
+    debounce((term) => {
+      if (term.trim()) {
+        dispatch(searchPrescriptions(term));
+      }
+    }, 500),
+    [dispatch]
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -87,6 +101,24 @@ const PrescriptionForm = () => {
 
     dispatch(createPrescription(payload));
   };
+
+  const handleSearch = () => {
+    if (searchTerm.trim()) {
+      dispatch(searchPrescriptions(searchTerm));
+    }
+  };
+
+  const handleClear = () => {
+    setSearchTerm("");
+    dispatch(getPrescription());
+  };
+
+  // Cleanup debounce on component unmount
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
 
   return (
     <div className="page-content">
@@ -265,6 +297,46 @@ const PrescriptionForm = () => {
         <row>
           <h4 className="mb-3">Prescriptions</h4>
 
+          <div className="row mb-3">
+            <div className="col-md-4">
+              <div className="input-group">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search prescriptions..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSearch();
+                    }
+                  }}
+                />
+                <button 
+                  className="btn btn-primary" 
+                  type="button"
+                  onClick={handleSearch}
+                >
+                  Search
+                </button>
+                <button 
+                  className="btn btn-secondary" 
+                  type="button"
+                  onClick={handleClear}
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* {loading && (
+            <div className="text-center mb-3">
+              <Spinner color="primary" />
+              <span className="ms-2">Loading...</span>
+            </div>
+          )} */}
+
           <div className="table-responsive">
             <table className="table align-middle table-nowrap table-striped table-bordered">
               <thead className="table-light">
@@ -279,7 +351,69 @@ const PrescriptionForm = () => {
                 </tr>
               </thead>
               <tbody>
-                {prescriptions?.count > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan="7" className="text-center py-4">
+                      <Spinner color="primary" />
+                      <span className="ms-2">Loading prescriptions...</span>
+                    </td>
+                  </tr>
+                ) : searchTerm ? (
+                  searchResults?.count > 0 ? (
+                    searchResults?.results.map((pres, index) => (
+                      <tr key={pres.id}>
+                        <td>{index + 1}</td>
+                        <td>{pres.patient}</td>
+                        <td>{pres.doctor_name}</td>
+                        <td>{pres.notes}</td>
+
+                        <td>
+                          {pres.prescribed_drugs.map((d, idx) => (
+                            <div key={idx} className="mb-1">
+                              <strong>{d.drug}</strong>
+                              <br />
+                              Dosage: {d.dosage}
+                              <br />
+                              Qty: {d.quantity}, Repeats: {d.repeats}
+                              <br />
+                              <em>{d.instructions}</em>
+                            </div>
+                          ))}
+                        </td>
+
+                        <td>
+                          {pres.prescribed_supplier_products.map((p, idx) => (
+                            <div key={idx} className="mb-1">
+                              <strong>{p.product}</strong>
+                              <br />
+                              Dosage: {p.dosage}
+                              <br />
+                              Qty: {p.quantity}, Repeats: {p.repeats}
+                              <br />
+                              <em>{p.instructions}</em>
+                            </div>
+                          ))}
+                        </td>
+
+                        <td>
+                          <button
+                            onClick={() => dispatch(downloadPrescriptionPDF(pres.id))}
+                            className="btn btn-sm btn-soft-primary"
+                            disabled={downloadingIds.includes(pres.id)}
+                          >
+                            {downloadingIds.includes(pres.id) ? <Spinner size="sm" /> : "Download"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className="text-center">
+                        No prescriptions found.
+                      </td>
+                    </tr>
+                  )
+                ) : prescriptions?.count > 0 ? (
                   prescriptions?.results.map((pres, index) => (
                     <tr key={pres.id}>
                       <td>{index + 1}</td>

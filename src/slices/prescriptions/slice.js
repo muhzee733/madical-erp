@@ -1,8 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createPrescription, createDrug, getPrescription, downloadPrescriptionPDF } from "./thunk";
+import { createPrescription, createDrug, getPrescription, downloadPrescriptionPDF, searchPrescriptions } from "./thunk";
 
 const initialState = {
   prescriptions: [],
+  searchResults: [],
   loading: false,
   error: null,
   success: false,
@@ -46,6 +47,20 @@ const prescriptionSlice = createSlice({
         state.prescriptions = action.payload;
       })
       .addCase(getPrescription.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Search Prescriptions
+      .addCase(searchPrescriptions.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(searchPrescriptions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.searchResults = action.payload;
+      })
+      .addCase(searchPrescriptions.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
