@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardBody, Button, Spinner } from "reactstrap";
+import { Card, CardBody, Button, Spinner, Container } from "reactstrap";
 import axios from "axios";
+import BreadCrumb from "../../Components/Common/BreadCrumb";
 
 const AppointmentDetails = () => {
   const { id } = useParams();
@@ -14,11 +15,15 @@ const AppointmentDetails = () => {
     const fetchAppointmentDetails = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/appointments/details/${id}/`);
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/appointments/details/${id}/`
+        );
         setAppointmentDetails(response.appointment);
         setError(null);
       } catch (err) {
-        setError(err.response?.message || "Failed to fetch appointment details");
+        setError(
+          err.response?.message || "Failed to fetch appointment details"
+        );
         setAppointmentDetails(null);
       } finally {
         setLoading(false);
@@ -70,7 +75,8 @@ const AppointmentDetails = () => {
 
   return (
     <div className="page-content">
-      <div className="container-fluid">
+      <Container fluid>
+        <BreadCrumb title="Admin Dashboard" pageTitle="Dashboard" />
         <div className="row">
           <div className="col-12">
             <Card>
@@ -103,12 +109,18 @@ const AppointmentDetails = () => {
                       </tr>
                       <tr>
                         <th>Time</th>
-                        <td>{`${formatTime(appointmentDetails.start_time)} - ${formatTime(appointmentDetails.end_time)}`}</td>
+                        <td>{`${formatTime(
+                          appointmentDetails.start_time
+                        )} - ${formatTime(appointmentDetails.end_time)}`}</td>
                       </tr>
                       <tr>
                         <th>Status</th>
                         <td>
-                          <span className={`badge bg-${getStatusColor(appointmentDetails.order.status)}`}>
+                          <span
+                            className={`badge bg-${getStatusColor(
+                              appointmentDetails.order.status
+                            )}`}
+                          >
                             {appointmentDetails.order.status}
                           </span>
                         </td>
@@ -124,14 +136,22 @@ const AppointmentDetails = () => {
                       <tr>
                         <th>Payment Status</th>
                         <td>
-                          <span className={`badge bg-${getPaymentStatusColor(appointmentDetails.order.status)}`}>
+                          <span
+                            className={`badge bg-${getPaymentStatusColor(
+                              appointmentDetails.order.status
+                            )}`}
+                          >
                             {appointmentDetails.order.status}
                           </span>
                         </td>
                       </tr>
                       <tr>
                         <th>Created At</th>
-                        <td>{new Date(appointmentDetails.created_at).toLocaleString()}</td>
+                        <td>
+                          {new Date(
+                            appointmentDetails.created_at
+                          ).toLocaleString()}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -141,15 +161,13 @@ const AppointmentDetails = () => {
                   <Button color="success" className="me-2">
                     Confirm Appointment
                   </Button>
-                  <Button color="danger">
-                    Cancel Appointment
-                  </Button>
+                  <Button color="danger">Cancel Appointment</Button>
                 </div>
               </CardBody>
             </Card>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   );
 };
@@ -180,4 +198,4 @@ const getPaymentStatusColor = (status) => {
   }
 };
 
-export default AppointmentDetails; 
+export default AppointmentDetails;

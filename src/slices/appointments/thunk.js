@@ -12,7 +12,7 @@ export const getAppointments = createAsyncThunk(
         return rejectWithValue("No authentication token found");
       }
 
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/appointments/all/`, {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/appointments/availabilities/list/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         }
@@ -20,7 +20,7 @@ export const getAppointments = createAsyncThunk(
 
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      return rejectWithValue(error.response || error.message);
     }
   }
 );

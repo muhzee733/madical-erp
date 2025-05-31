@@ -67,9 +67,6 @@ const Login = (props) => {
       try {
         setIsLoading(true);
         setMessage({ text: '', type: '' }); // Clear previous messages
-        const hashedPassword = CryptoJS.SHA256(values.password).toString(
-          CryptoJS.enc.Base64
-        );
         const response = await fetch(
           `${process.env.REACT_APP_API_URL}/users/login/`,
           {
@@ -79,7 +76,7 @@ const Login = (props) => {
             },
             body: JSON.stringify({
               email: values.email,
-              password: hashedPassword,
+              password: values.password,
             }),
           }
         );

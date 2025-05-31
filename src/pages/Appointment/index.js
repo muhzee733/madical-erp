@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Button, Row, Col, Container, Card, CardBody, Alert } from "reactstrap";
-import { useNavigate } from "react-router-dom";
+import {
+  Button,
+  Row,
+  Col,
+  Container,
+  Card,
+  CardBody,
+  Alert,
+  Table,
+} from "reactstrap";
+import Swal from 'sweetalert2';
 import BreadCrumb from "../../Components/Common/BreadCrumb";
 import DoctorAuthWrapper from "../../Routes/DoctorAuthWrapper";
-import AppointmentTable from "../../Components/Common/AppointmentTable";
 import { useSelector, useDispatch } from "react-redux";
-import { getOrders } from "../../slices/OrderAppointment/thunk";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useMemo } from "react";
@@ -14,9 +21,9 @@ import { useMemo } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import { getAppointments } from "../../slices/thunks";
 
 const Appointment = () => {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const today = new Date();
@@ -29,10 +36,49 @@ const Appointment = () => {
   const [errorMessages, setErrorMessages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  document.title = "Appointment | Velzon - React Admin & Dashboard Template";
+  document.title = "Appointment | ProMedicine";
+
+  const localLoading = true;
+  const {
+    appointments,
+    loading: reduxLoading,
+    error,
+  } = useSelector((state) => state.Appointment);
+
+  const deleteAvailability = async (id) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This slot will be permanently deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(
+          `${process.env.REACT_APP_API_URL}/appointments/availabilities/${id}/delete/`
+        );
+        dispatch(getAppointments());
+        Swal.fire(
+          "Deleted!",
+          "The availability slot has been removed.",
+          "success"
+        );
+      } catch (error) {
+        Swal.fire(
+          "Error!",
+          error?.response?.message || "Failed to delete the slot.",
+          "error"
+        );
+      }
+    }
+  };
 
   useEffect(() => {
-    dispatch(getOrders());
+    dispatch(getAppointments());
     setLoading(false);
     const userCookie = Cookies.get("user");
     if (userCookie) {
@@ -40,13 +86,6 @@ const Appointment = () => {
     }
     setToken(Cookies.get("authUser"));
   }, [dispatch]);
-
-  const {
-    orders,
-    loading: ordersLoading,
-    error: ordersError,
-  } = useSelector((state) => state.OrderAppointment);
-
   const handleDateClick = (info) => {
     const clickedDate = new Date(info.dateStr);
     clickedDate.setHours(0, 0, 0, 0);
@@ -126,36 +165,36 @@ const Appointment = () => {
     setSuccessMessage("");
     setErrorMessages([]);
 
-    const payload = selectedSlots.map((slot) => ({
-      date: selectedDate,
-      start_time: slot.time,
+    if (selectedSlots.length === 0) {
+      setErrorMessages(["Please select at least one time slot."]);
+      setIsSubmitting(false);
+      return;
+    }
+
+    const isBulk = selectedSlots.length > 1;
+
+    const slotsPayload = selectedSlots.map((slot) => ({
+      start_time: `${selectedDate}T${slot.time}`,
+      end_time: `${selectedDate}T${getEndTime(slot.time)}`,
+      slot_type: "short",
+      timezone: "Australia/Brisbane",
     }));
+
+    const endpoint = isBulk
+      ? `${process.env.REACT_APP_API_URL}/appointments/availabilities/bulk/`
+      : `${process.env.REACT_APP_API_URL}/appointments/availabilities/`;
+
+    const finalPayload = isBulk ? { slots: slotsPayload } : slotsPayload[0];
+
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/appointments/availabilities/`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const { created, errors } = response;
+      await axios.post(endpoint, finalPayload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      if (created) {
-        setSuccessMessage(`${response.message}`);
-        setSelectedSlots([]);
-      } else if (created === false) {
-        setSuccessMessage(`${response.message}`);
-        setSelectedSlots([]);
-      }
-
-      if (errors && errors.length > 0) {
-        const formattedErrors = errors.map((e, i) =>
-          typeof e === "string" ? e : JSON.stringify(e)
-        );
-        setErrorMessages(formattedErrors);
-      }
+      setSuccessMessage("Schedule created successfully!");
+      setSelectedSlots([]);
     } catch (error) {
       setErrorMessages(["Something went wrong while submitting."]);
       console.error("Error creating schedule:", error);
@@ -238,6 +277,89 @@ const Appointment = () => {
                   </CardBody>
                 </Card>
               )}
+            </Col>
+          </Row>
+          <Row className="mt-4">
+            <Col>
+              <Card>
+                <CardBody>
+                  <h5 className="mb-3">All Appointments</h5>
+
+                  {loading ? (
+                    <div className="text-center my-4">
+                      <div
+                        className="spinner-border text-primary"
+                        role="status"
+                      >
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="table-responsive">
+                      <Table className="table-bordered align-middle mb-0">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Created At</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Slot Type</th>
+                            <th>Booked</th>
+                            <th>Timezone</th>
+                            <th>Delete</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {appointments?.results?.length > 0 ? (
+                            appointments.results.map((slot, index) => (
+                              <tr key={slot.id}>
+                                <td>{index + 1}</td>
+                                <td>
+                                  {new Date(slot.created_at).toLocaleString()}
+                                </td>
+                                <td>
+                                  {new Date(slot.start_time).toLocaleString()}
+                                </td>
+                                <td>
+                                  {new Date(slot.end_time).toLocaleString()}
+                                </td>
+                                <td>{slot.slot_type}</td>
+                                <td>
+                                  {slot.is_booked ? (
+                                    <span className="badge bg-danger">
+                                      Booked
+                                    </span>
+                                  ) : (
+                                    <span className="badge bg-success">
+                                      Not Booked
+                                    </span>
+                                  )}
+                                </td>
+                                <td>{slot.timezone}</td>
+                                <td>
+                                  <button
+                                    onClick={() => deleteAvailability(slot.id)}
+                                    disabled={slot.is_booked}
+                                    className="bg-danger border-0 text-white px-3 py-1 rounded disabled:opacity-50"
+                                  >
+                                    Delete
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="6" className="text-center">
+                                No appointments found.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </Table>
+                    </div>
+                  )}
+                </CardBody>
+              </Card>
             </Col>
           </Row>
         </Container>

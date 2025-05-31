@@ -47,12 +47,16 @@ const Register = () => {
       fname: "",
       lname: "",
       password: "",
+      phone: "",
       confirm_password: "",
     },
     validationSchema: Yup.object({
       email: Yup.string().required("Please Enter Your Email"),
       fname: Yup.string().required("Please Enter Your First Name"),
       lname: Yup.string().required("Please Enter Your Last Name"),
+      phone: Yup.string()
+        .matches(/^(?:\+?61|0)4\d{8}$/, "Enter valid Australian phone number")
+        .required("Please Enter Your Phone Number"),
       password: Yup.string()
         .required("Please Enter Your Password")
         .min(6, "Password must be at least 6 characters long"),
@@ -61,16 +65,13 @@ const Register = () => {
         .required("Please confirm your password"),
     }),
     onSubmit: (values) => {
-      const hashedPassword = CryptoJS.SHA256(values.password).toString(
-        CryptoJS.enc.Base64
-      );
       const payload = {
-        username: values.email,
-        role: 'patient',
+        role: "patient",
+        phone_number: values.phone,
         email: values.email,
         first_name: values.fname,
         last_name: values.lname,
-        password: hashedPassword,
+        password: values.password,
       };
       dispatch(registerUser(payload, navigator));
     },
@@ -85,7 +86,8 @@ const Register = () => {
   }));
 
   // Inside your component
-  const { registrationError, success, error, loading } = useSelector(registerData);
+  const { registrationError, success, error, loading } =
+    useSelector(registerData);
 
   useEffect(() => {
     dispatch(apiError(""));
@@ -239,6 +241,33 @@ const Register = () => {
                           validation.errors.email ? (
                             <FormFeedback type="invalid">
                               <div>{validation.errors.email}</div>
+                            </FormFeedback>
+                          ) : null}
+                        </div>
+                        <div className="mb-3">
+                          <Label htmlFor="phone" className="form-label">
+                            Phone Number <span className="text-danger">*</span>
+                          </Label>
+                          <Input
+                            id="phone"
+                            name="phone"
+                            className="form-control"
+                            placeholder="e.g. 0412345678 or +61412345678"
+                            type="text"
+                            onChange={validation.handleChange}
+                            onBlur={validation.handleBlur}
+                            value={validation.values.phone || ""}
+                            invalid={
+                              validation.touched.phone &&
+                              validation.errors.phone
+                                ? true
+                                : false
+                            }
+                          />
+                          {validation.touched.phone &&
+                          validation.errors.phone ? (
+                            <FormFeedback type="invalid">
+                              <div>{validation.errors.phone}</div>
                             </FormFeedback>
                           ) : null}
                         </div>

@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// Create prescription
+// POST: Create prescription
 export const createPrescription = createAsyncThunk(
   "prescriptions/create",
   async (prescriptionData, { rejectWithValue }) => {
@@ -12,14 +12,13 @@ export const createPrescription = createAsyncThunk(
       );
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to create prescription");
+      return rejectWithValue(error.response || "Failed to create prescription");
     }
   }
 );
 
-// List prescriptions
-export const getPrescriptions = createAsyncThunk(
-  "prescriptions/list",
+export const getPrescription = createAsyncThunk(
+  "prescriptions/getPrescription",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(
@@ -27,25 +26,22 @@ export const getPrescriptions = createAsyncThunk(
       );
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to fetch prescriptions");
+      return rejectWithValue(error.response || error.message);
     }
   }
 );
 
-// Download prescription PDF
 export const downloadPrescriptionPDF = createAsyncThunk(
   "prescriptions/downloadPDF",
   async (prescriptionId, { rejectWithValue }) => {
     try {
       const response = await axios.get(
         `${process.env.REACT_APP_API_URL}/prescriptions/pdf/${prescriptionId}/`,
-        {
-          responseType: 'blob'
-        }
+        { responseType: 'blob' }
       );
-      return response;
+      return { id: prescriptionId, data: response.data };
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to download prescription");
+      return rejectWithValue(error.response || error.message);
     }
   }
-); 
+);

@@ -16,44 +16,17 @@ export const registerUser = (user, navigator) => async (dispatch) => {
       `${process.env.REACT_APP_API_URL}/users/register/`,
       user
     );
+    console.log(response, 'response')
     if (response.success === true) {
       dispatch(registerUserSuccessful(response.message));
-      const userId = response?.user?.id;
-      const answers = JSON.parse(sessionStorage.getItem("preAnswers"));
-      const answersArray = Object.entries(answers).map(
-        ([questionId, answer]) => ({
-          question_id: questionId,
-          answer: Array.isArray(answer) ? answer : [answer],
-        })
-      );
-
-      const finalPayload = {
-        user_id: userId,
-        responses: answersArray,
-      };
-
-      if (answers && userId) {
-        try {
-          await axios.post(
-            `${process.env.REACT_APP_API_URL}/post_answer/`,
-            finalPayload
-          );
-        } catch (error) {
-          console.log(error);
-        }
-      }
-    } else if (response.success === false) {
-      if (response.errors?.email) {
-        dispatch(registerUserFailed(response.errors.email[0]));
-      } else {
-        dispatch(registerUserFailed(response.errors));
-      }
-    } else {
-      dispatch(registerUserFailed(response.errors));
     }
   } catch (error) {
-    console.log("Other Error:", error);
-    dispatch(registerUserFailed(error));
+    if (error.response?.status === 400) {
+      const errorMsg = error.response.data.errors.email[0];
+      dispatch(registerUserFailed(errorMsg));
+    } else {
+      dispatch(registerUserFailed("Registration failed"));
+    }
   }
 };
 

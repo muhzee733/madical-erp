@@ -21,6 +21,7 @@ import {
   NavLink,
   TabContent,
   TabPane,
+  CardText,
 } from "reactstrap";
 import AppointmentTable from "../../Components/Common/AppointmentTable";
 
@@ -49,7 +50,6 @@ const MiniAppointment = () => {
 
   useEffect(() => {
     dispatch(getAppointments());
-    dispatch(getOrders());
     setLoading(false);
   }, [dispatch]);
 
