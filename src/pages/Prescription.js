@@ -11,9 +11,15 @@ import debounce from "lodash/debounce";
 
 const PrescriptionForm = () => {
   const dispatch = useDispatch();
-  const { prescriptions, searchResults, loading, formLoading, success, error, downloadingIds } = useSelector(
-    (state) => state.prescriptions
-  );
+  const {
+    prescriptions,
+    searchResults,
+    loading,
+    formLoading,
+    success,
+    error,
+    downloadingIds,
+  } = useSelector((state) => state.prescriptions);
 
   useEffect(() => {
     dispatch(getPrescription());
@@ -112,7 +118,6 @@ const PrescriptionForm = () => {
     dispatch(getPrescription());
   };
 
-  // Cleanup debounce on component unmount
   useEffect(() => {
     return () => {
       debouncedSearch.cancel();
@@ -277,7 +282,11 @@ const PrescriptionForm = () => {
 
           <div className="text-end">
             <button type="submit" className="btn btn-primary">
-              {formLoading ? <Spinner color="primary" /> : "Submit Prescription"}
+              {formLoading ? (
+                <Spinner color="primary" />
+              ) : (
+                "Submit Prescription"
+              )}
             </button>
           </div>
 
@@ -306,20 +315,20 @@ const PrescriptionForm = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       handleSearch();
                     }
                   }}
                 />
-                <button 
-                  className="btn btn-primary" 
+                <button
+                  className="btn btn-primary"
                   type="button"
                   onClick={handleSearch}
                 >
                   Search
                 </button>
-                <button 
-                  className="btn btn-secondary" 
+                <button
+                  className="btn btn-secondary"
                   type="button"
                   onClick={handleClear}
                 >
@@ -389,11 +398,17 @@ const PrescriptionForm = () => {
 
                         <td>
                           <button
-                            onClick={() => dispatch(downloadPrescriptionPDF(pres.id))}
+                            onClick={() =>
+                              dispatch(downloadPrescriptionPDF(pres.id))
+                            }
                             className="btn btn-sm btn-soft-primary"
                             disabled={downloadingIds.includes(pres.id)}
                           >
-                            {downloadingIds.includes(pres.id) ? <Spinner size="sm" /> : "Download"}
+                            {downloadingIds.includes(pres.id) ? (
+                              <Spinner size="sm" />
+                            ) : (
+                              "Download"
+                            )}
                           </button>
                         </td>
                       </tr>
@@ -443,11 +458,17 @@ const PrescriptionForm = () => {
 
                       <td>
                         <button
-                          onClick={() => dispatch(downloadPrescriptionPDF(pres.id))}
+                          onClick={() =>
+                            dispatch(downloadPrescriptionPDF(pres.id))
+                          }
                           className="btn btn-sm btn-soft-primary"
                           disabled={downloadingIds.includes(pres.id)}
                         >
-                          {downloadingIds.includes(pres.id) ? <Spinner size="sm" /> : "Download"}
+                          {downloadingIds.includes(pres.id) ? (
+                            <Spinner size="sm" />
+                          ) : (
+                            "Download"
+                          )}
                         </button>
                       </td>
                     </tr>

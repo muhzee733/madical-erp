@@ -4,21 +4,17 @@ import BreadCrumb from "../../Components/Common/BreadCrumb";
 import DoctorAuthWrapper from "../../Routes/DoctorAuthWrapper";
 import AppointmentTable from "../../Components/Common/AppointmentTable";
 import { useSelector, useDispatch } from "react-redux";
-import { getOrders } from "../../slices/OrderAppointment/thunk";
+import { getAppointments } from "../../slices/appointments/thunk";
 
 const DoctorDashboard = () => {
   const dispatch = useDispatch();
   document.title = "Doctor Dashboard | Velzon - React Admin & Dashboard Template";
 
   useEffect(() => {
-    dispatch(getOrders());
+    dispatch(getAppointments());
   }, [dispatch]);
 
-  const {
-    orders,
-    loading: ordersLoading,
-    error: ordersError,
-  } = useSelector((state) => state.OrderAppointment);
+  const {appointments, error, loading} = useSelector((state) => state.Appointment);
 
   return (
     <React.Fragment>
@@ -30,11 +26,11 @@ const DoctorDashboard = () => {
               <Col>
                 <Card>
                   <CardBody>
-                    <h4 className="card-title mb-4">Today's Appointments</h4>
+                    <h4 className="card-title mb-4">Appointments</h4>
                     <AppointmentTable 
-                      orders={orders} 
-                      loading={ordersLoading} 
-                      error={ordersError}
+                      appointments={appointments} 
+                      loading={loading} 
+                      error={error}
                     />
                   </CardBody>
                 </Card>

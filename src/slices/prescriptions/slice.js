@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createPrescription, createDrug, getPrescription, downloadPrescriptionPDF, searchPrescriptions } from "./thunk";
+import { createPrescription, searchDrug, getPrescription, downloadPrescriptionPDF, searchPrescriptions } from "./thunk";
 
 const initialState = {
   prescriptions: [],

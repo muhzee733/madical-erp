@@ -31,6 +31,7 @@ const authProtectedRoutes = [
   { path: "/dashboard/admin/questions", component: <Questions /> },
   { path: "/dashboard/doctor/appointment", component: <Appointment /> },
   { path: "/dashboard/doctor/prescription", component: <Prescription /> },
+  { path: "/dashboard/admin/prescription", component: <Prescription /> },
   { path: "/pages-privacy-policy", component: <PrivecyPolicy /> },
   { path: "/pages-terms-condition", component: <TermsCondition /> },
   { path: "/dashboard/doctor/schedule-appointment", component: <ScheduleAppointment /> },

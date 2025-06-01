@@ -109,6 +109,13 @@ const Navdata = () => {
         link: "/dashboard/doctor/appointment",
         click: (e) => handleMenuClick(e, "Appointment"),
       },
+      {
+        id: "prescription",
+        label: "Prescriptions",
+        icon: "bx bx-file",
+        link: "/dashboard/doctor/prescription",
+        click: (e) => handleMenuClick(e, "Prescription"),
+      },
     ],
     admin: [
       {
@@ -130,6 +137,13 @@ const Navdata = () => {
         icon: "bx bx-help-circle",
         link: "/dashboard/admin/questions",
         click: (e) => handleMenuClick(e, "Questions"),
+      },
+      {
+        id: "prescription",
+        label: "Prescriptions",
+        icon: "bx bx-file",
+        link: "/dashboard/admin/prescription",
+        click: (e) => handleMenuClick(e, "Prescription"),
       },
     ],
   };

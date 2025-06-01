@@ -1,17 +1,27 @@
 import React, { useEffect, useState, useMemo } from "react";
 import TableContainer from "./TableContainer";
 import { Spinner } from "reactstrap";
-import axios from "axios";
 import { useNavigate } from 'react-router-dom';
 
 // Function to format time to 'HH:mm' format
 const formatTime = (time) => {
   if (!time) return "";
-  const [hour, minute] = time.split(":");
-  return `${hour}:${minute}`;
+  const date = new Date(time);
+  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 };
 
-const AppointmentTable = ({ orders, loading, error }) => {
+// Function to format date
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+
+const AppointmentTable = ({ appointments, loading, error }) => {
   const navigate = useNavigate();
   
   const handleViewAppointment = (appointmentId) => {
@@ -25,46 +35,69 @@ const AppointmentTable = ({ orders, loading, error }) => {
         accessorKey: "index", 
         enableColumnFilter: false,
         enableSorting: false,
-        cell: (cell) => <span>{cell.row.index + 1}</span>, // Shows row index (1-based)
+        cell: (cell) => <span>{cell.row.index + 1}</span>,
       },
       {
         header: "Created At",
         accessorKey: "created_at",
         enableColumnFilter: false,
         cell: (cell) => (
-          <span>{new Date(cell.getValue()).toLocaleString()}</span>
-        ), // Format the date
+          <span>
+            {new Date(cell.getValue()).toLocaleString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </span>
+        ),
       },
       {
         header: "Date",
-        accessorKey: "appointment_date",
+        accessorKey: "start_time",
         enableColumnFilter: false,
-        cell: (cell) => <span>{cell.getValue()}</span>,
+        cell: (cell) => <span>{formatDate(cell.getValue())}</span>,
       },
       {
-        header: "Time",
-        accessorKey: "start_time", // Show formatted start time
+        header: "Start Time",
+        accessorKey: "start_time",
         enableColumnFilter: false,
         cell: (cell) => <span>{formatTime(cell.getValue())}</span>,
       },
       {
-        header: "Status",
-        accessorKey: "status",
+        header: "End Time",
+        accessorKey: "end_time",
+        enableColumnFilter: false,
+        cell: (cell) => <span>{formatTime(cell.getValue())}</span>,
+      },
+      {
+        header: "Slot Type",
+        accessorKey: "slot_type",
         enableColumnFilter: false,
         cell: (cell) => {
-          const status = cell.getValue();
-          let badgeColor = "secondary"; // Default badge color
-
-          // Assign colors for different statuses
-          if (status === "pending") badgeColor = "warning";
-          if (status === "confirmed") badgeColor = "success";
-          if (status === "cancelled") badgeColor = "danger";
-
-          return <span className={`badge bg-${badgeColor}`}>{status}</span>;
+          const slotType = cell.getValue();
+          return <span className="text-capitalize">{slotType}</span>;
+        },
+      }
+      ,
+      {
+        header: "Is Booked",
+        accessorKey: "is_booked",
+        enableColumnFilter: false,
+        cell: (cell) => {
+          const isBooked = cell.getValue();
+          const badgeColor = isBooked ? "success" : "warning";
+          const status = isBooked ? "Yes" : "No";
+          return (
+            <span className={`badge bg-${badgeColor} p-2`}>
+              {status}
+            </span>
+          );
         },
       },
       {
-        header: "View",
+        header: "Action",
         accessorKey: "",
         cell: (cell) => (
           <button
@@ -91,10 +124,10 @@ const AppointmentTable = ({ orders, loading, error }) => {
             <div className="text-center py-5">
               <h5 className="text-danger">Error: {error}</h5>
             </div>
-          ) : orders && orders.length > 0 ? (
+          ) : appointments && appointments?.results?.length > 0 ? (
             <TableContainer
               columns={columns}
-              data={orders || []}
+              data={appointments?.results || []}
               isGlobalFilter={true}
               isAddUserList={false}
               customPageSize={10}
