@@ -5,6 +5,7 @@ const initialState = {
   prescriptions: [],
   searchResults: [],
   loading: false,
+  formLoading: false,
   error: null,
   success: false,
   downloadingIds: [],
@@ -16,6 +17,7 @@ const prescriptionSlice = createSlice({
   reducers: {
     resetPrescriptionState: (state) => {
       state.loading = false;
+      state.formLoading = false;
       state.error = null;
       state.success = false;
     },
@@ -24,16 +26,19 @@ const prescriptionSlice = createSlice({
     builder
       // Create Prescription
       .addCase(createPrescription.pending, (state) => {
-        state.loading = true;
+        state.formLoading = true;
         state.error = null;
       })
       .addCase(createPrescription.fulfilled, (state, action) => {
-        state.loading = false;
+        state.formLoading = false;
         state.success = true;
-        state.prescriptions.push(action.payload);
+        if (state.prescriptions.results) {
+          state.prescriptions.results.unshift(action.payload);
+          state.prescriptions.count += 1;
+        }
       })
       .addCase(createPrescription.rejected, (state, action) => {
-        state.loading = false;
+        state.formLoading = false;
         state.error = action.payload;
       })
 

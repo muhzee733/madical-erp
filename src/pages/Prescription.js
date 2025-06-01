@@ -11,10 +11,9 @@ import debounce from "lodash/debounce";
 
 const PrescriptionForm = () => {
   const dispatch = useDispatch();
-  const { prescriptions, searchResults, loading, success, error, downloadingIds } = useSelector(
+  const { prescriptions, searchResults, loading, formLoading, success, error, downloadingIds } = useSelector(
     (state) => state.prescriptions
   );
-  console.log(prescriptions, "prescriptions");
 
   useEffect(() => {
     dispatch(getPrescription());
@@ -278,7 +277,7 @@ const PrescriptionForm = () => {
 
           <div className="text-end">
             <button type="submit" className="btn btn-primary">
-              {loading ? <Spinner color="primary" /> : "Submit Prescription"}
+              {formLoading ? <Spinner color="primary" /> : "Submit Prescription"}
             </button>
           </div>
 
@@ -329,13 +328,6 @@ const PrescriptionForm = () => {
               </div>
             </div>
           </div>
-
-          {/* {loading && (
-            <div className="text-center mb-3">
-              <Spinner color="primary" />
-              <span className="ms-2">Loading...</span>
-            </div>
-          )} */}
 
           <div className="table-responsive">
             <table className="table align-middle table-nowrap table-striped table-bordered">
