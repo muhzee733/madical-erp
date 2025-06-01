@@ -5,8 +5,20 @@ import {
   getPrescription,
   searchPrescriptions,
   downloadPrescriptionPDF,
+  searchDrugs,
+  searchSupplierProducts,
+  searchPatients,
 } from "../slices/prescriptions/thunk";
-import { Spinner, Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
+import {
+  Spinner,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  ListGroup,
+  ListGroupItem,
+} from "reactstrap";
 import debounce from "lodash/debounce";
 
 const PrescriptionForm = () => {
@@ -14,6 +26,9 @@ const PrescriptionForm = () => {
   const {
     prescriptions,
     searchResults,
+    drugResults,
+    supplierResults,
+    patientResults,
     loading,
     formLoading,
     success,
@@ -23,13 +38,28 @@ const PrescriptionForm = () => {
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(''); // 'drug' or 'supplier'
-  const [searchInput, setSearchInput] = useState('');
+  const [modalType, setModalType] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [selectedDrugs, setSelectedDrugs] = useState([]);
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [manualDrugName, setManualDrugName] = useState("");
+  const [isManualEntry, setIsManualEntry] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
+  const [patientSearchInput, setPatientSearchInput] = useState("");
 
   const toggleModal = (type) => {
     setModalType(type);
     setIsModalOpen(!isModalOpen);
-    setSearchInput('');
+    setSearchInput("");
+    setIsManualEntry(false);
+    setManualDrugName("");
+    // Clear search results when closing modal
+    if (type === "drug") {
+      dispatch({ type: "prescriptions/searchDrugs/fulfilled", payload: { results: [] } });
+    } else if (type === "supplier") {
+      dispatch({ type: "prescriptions/searchSupplierProducts/fulfilled", payload: { results: [] } });
+    }
   };
 
   const handleSearchInput = (e) => {
@@ -101,22 +131,21 @@ const PrescriptionForm = () => {
     e.preventDefault();
 
     const payload = {
-      ...formData,
-      patient: Number(formData.patient),
-      prescribed_drugs: formData.prescribed_drugs.map((d) => ({
-        ...d,
-        drug: Number(d.drug),
-        quantity: Number(d.quantity),
-        repeats: Number(d.repeats),
+      notes: formData.notes,
+      prescribed_drugs: selectedDrugs.map((drug) => ({
+        drug: drug.id,
+        dosage: drug.dosage,
+        instructions: drug.instructions,
+        quantity: Number(drug.quantity),
+        repeats: Number(drug.repeats),
       })),
-      prescribed_supplier_products: formData.prescribed_supplier_products.map(
-        (p) => ({
-          ...p,
-          product: Number(p.product),
-          quantity: Number(p.quantity),
-          repeats: Number(p.repeats),
-        })
-      ),
+      prescribed_supplier_products: selectedProducts.map((product) => ({
+        product: product.id,
+        dosage: product.dosage,
+        instructions: product.instructions,
+        quantity: Number(product.quantity),
+        repeats: Number(product.repeats),
+      })),
     };
 
     dispatch(createPrescription(payload));
@@ -139,6 +168,103 @@ const PrescriptionForm = () => {
     };
   }, [debouncedSearch]);
 
+  const handleModalSearch = () => {
+    if (searchInput.trim()) {
+      if (modalType === "drug") {
+        dispatch(searchDrugs(searchInput));
+      } else if (modalType === "supplier") {
+        dispatch(searchSupplierProducts(searchInput));
+      }
+    }
+  };
+
+  const handleDrugSelect = (drug) => {
+    setSelectedDrugs((prev) => [
+      ...prev,
+      { ...drug, dosage: "", instructions: "", quantity: "", repeats: "" },
+    ]);
+    setSearchInput("");
+    // Clear drug search results
+    dispatch({ type: "prescriptions/searchDrugs/fulfilled", payload: { results: [] } });
+    toggleModal(modalType);
+  };
+
+  const handleProductSelect = (product) => {
+    setSelectedProducts((prev) => [
+      ...prev,
+      { ...product, dosage: "", instructions: "", quantity: "", repeats: "" },
+    ]);
+    setSearchInput("");
+    // Clear supplier search results
+    dispatch({ type: "prescriptions/searchSupplierProducts/fulfilled", payload: { results: [] } });
+    toggleModal(modalType);
+  };
+
+  const handleManualDrugAdd = () => {
+    if (manualDrugName.trim()) {
+      setSelectedDrugs((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          drug_name: manualDrugName,
+          dosage: "",
+          instructions: "",
+          quantity: "",
+          repeats: "",
+          is_manual_entry: true,
+        },
+      ]);
+      setManualDrugName("");
+      setIsManualEntry(false);
+      // Clear drug search results
+      dispatch({ type: "prescriptions/searchDrugs/fulfilled", payload: { results: [] } });
+      toggleModal(modalType);
+    }
+  };
+
+  const handleDrugDetailsChange = (index, field, value) => {
+    setSelectedDrugs((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const handleProductDetailsChange = (index, field, value) => {
+    setSelectedProducts((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const removeDrug = (index) => {
+    setSelectedDrugs((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeProduct = (index) => {
+    setSelectedProducts((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const togglePatientModal = () => {
+    setIsPatientModalOpen(!isPatientModalOpen);
+    setPatientSearchInput("");
+    dispatch({ type: "prescriptions/searchPatients/fulfilled", payload: { results: [] } });
+  };
+
+  const handlePatientSearch = () => {
+    if (patientSearchInput.trim()) {
+      dispatch(searchPatients(patientSearchInput));
+    }
+  };
+
+  const handlePatientSelect = (patient) => {
+    setSelectedPatient(patient);
+    setPatientSearchInput("");
+    dispatch({ type: "prescriptions/searchPatients/fulfilled", payload: { results: [] } });
+    togglePatientModal();
+  };
+
   return (
     <div className="page-content">
       <div className="container-fluid">
@@ -150,78 +276,155 @@ const PrescriptionForm = () => {
               </div>
               <div className="card-body">
                 <form onSubmit={handleSubmit}>
+                  {/* Patient Card */}
+                  <div className="card">
+                    <div className="card-header d-flex justify-content-between align-items-center">
+                      <h5 className="card-title mb-0">Patient</h5>
+                      <button
+                        type="button"
+                        className="btn btn-primary d-flex align-items-center"
+                        onClick={togglePatientModal}
+                      >
+                        <i className="ri-add-line me-1"></i>
+                        Add Patient
+                      </button>
+                    </div>
+                    <div className="card-body">
+                      {selectedPatient ? (
+                        <div className="d-flex align-items-center">
+                          <div className="flex-grow-1">
+                            <h5 className="mb-1">{selectedPatient.name}</h5>
+                            <p className="text-muted mb-0">
+                              ID: {selectedPatient.id}
+                              {selectedPatient.email && ` • ${selectedPatient.email}`}
+                              {selectedPatient.phone && ` • ${selectedPatient.phone}`}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-sm"
+                            onClick={() => setSelectedPatient(null)}
+                          >
+                            <i className="ri-delete-bin-line"></i>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="text-center text-muted">
+                          No patient selected. Click "Add Patient" to select a patient.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="card">
                     <div className="card-header d-flex justify-content-between align-items-center">
                       <h5 className="card-title mb-0">Prescribed Drugs</h5>
                       <button
                         type="button"
                         className="btn btn-primary d-flex align-items-center"
-                        onClick={() => toggleModal('drug')}
+                        onClick={() => toggleModal("drug")}
                       >
-                        <i className="ri-search-line me-1"></i>
-                        Search Drug
+                        <i className="ri-add-line me-1"></i>
+                        Add Drug
                       </button>
                     </div>
                     <div className="card-body">
-                      {formData.prescribed_drugs.map((drug, index) => (
-                        <div className="row mb-3" key={index}>
-                          <div className="col-md-2">
-                            <label className="form-label">Drug ID</label>
-                            <input
-                              type="number"
-                              className="form-control"
-                              name="drug"
-                              value={drug.drug}
-                              onChange={(e) => handleDrugChange(index, e)}
-                              required
-                            />
-                          </div>
-                          <div className="col-md-2">
-                            <label className="form-label">Dosage</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              name="dosage"
-                              value={drug.dosage}
-                              onChange={(e) => handleDrugChange(index, e)}
-                              required
-                            />
-                          </div>
-                          <div className="col-md-3">
-                            <label className="form-label">Instructions</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              name="instructions"
-                              value={drug.instructions}
-                              onChange={(e) => handleDrugChange(index, e)}
-                              required
-                            />
-                          </div>
-                          <div className="col-md-2">
-                            <label className="form-label">Quantity</label>
-                            <input
-                              type="number"
-                              className="form-control"
-                              name="quantity"
-                              value={drug.quantity}
-                              onChange={(e) => handleDrugChange(index, e)}
-                              required
-                            />
-                          </div>
-                          <div className="col-md-2">
-                            <label className="form-label">Repeats</label>
-                            <input
-                              type="number"
-                              className="form-control"
-                              name="repeats"
-                              value={drug.repeats}
-                              onChange={(e) => handleDrugChange(index, e)}
-                              required
-                            />
-                          </div>
+                      {selectedDrugs.length > 0 ? (
+                        <div className="table-responsive">
+                          <table className="table table-centered table-nowrap mb-0">
+                            <thead className="table-light">
+                              <tr>
+                                <th>Drug Name</th>
+                                <th>Dosage</th>
+                                <th>Instructions</th>
+                                <th>Quantity</th>
+                                <th>Repeats</th>
+                                <th>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {selectedDrugs.map((drug, index) => (
+                                <tr key={index}>
+                                  <td>{drug.drug_name}</td>
+                                  <td>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={drug.dosage}
+                                      onChange={(e) =>
+                                        handleDrugDetailsChange(
+                                          index,
+                                          "dosage",
+                                          e.target.value
+                                        )
+                                      }
+                                      required
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={drug.instructions}
+                                      onChange={(e) =>
+                                        handleDrugDetailsChange(
+                                          index,
+                                          "instructions",
+                                          e.target.value
+                                        )
+                                      }
+                                      required
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="number"
+                                      className="form-control"
+                                      value={drug.quantity}
+                                      onChange={(e) =>
+                                        handleDrugDetailsChange(
+                                          index,
+                                          "quantity",
+                                          e.target.value
+                                        )
+                                      }
+                                      required
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="number"
+                                      className="form-control"
+                                      value={drug.repeats}
+                                      onChange={(e) =>
+                                        handleDrugDetailsChange(
+                                          index,
+                                          "repeats",
+                                          e.target.value
+                                        )
+                                      }
+                                      required
+                                    />
+                                  </td>
+                                  <td>
+                                    <button
+                                      type="button"
+                                      className="btn btn-danger btn-sm"
+                                      onClick={() => removeDrug(index)}
+                                    >
+                                      <i className="ri-delete-bin-line"></i>
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
-                      ))}
+                      ) : (
+                        <div className="text-center text-muted">
+                          No drugs added yet. Click "Add Drug" to add drugs.
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -231,72 +434,110 @@ const PrescriptionForm = () => {
                       <button
                         type="button"
                         className="btn btn-primary d-flex align-items-center"
-                        onClick={() => toggleModal('supplier')}
+                        onClick={() => toggleModal("supplier")}
                       >
-                        <i className="ri-search-line me-1"></i>
-                        Search Supplier Products
+                        <i className="ri-add-line me-1"></i>
+                        Add Supplier Product
                       </button>
                     </div>
                     <div className="card-body">
-                      {formData.prescribed_supplier_products.map((product, index) => (
-                        <div className="row mb-3" key={index}>
-                          <div className="col-md-2">
-                            <label className="form-label">Product ID</label>
-                            <input
-                              type="number"
-                              className="form-control"
-                              name="product"
-                              value={product.product}
-                              onChange={(e) => handleProductChange(index, e)}
-                              required
-                            />
-                          </div>
-                          <div className="col-md-2">
-                            <label className="form-label">Dosage</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              name="dosage"
-                              value={product.dosage}
-                              onChange={(e) => handleProductChange(index, e)}
-                              required
-                            />
-                          </div>
-                          <div className="col-md-3">
-                            <label className="form-label">Instructions</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              name="instructions"
-                              value={product.instructions}
-                              onChange={(e) => handleProductChange(index, e)}
-                              required
-                            />
-                          </div>
-                          <div className="col-md-2">
-                            <label className="form-label">Quantity</label>
-                            <input
-                              type="number"
-                              className="form-control"
-                              name="quantity"
-                              value={product.quantity}
-                              onChange={(e) => handleProductChange(index, e)}
-                              required
-                            />
-                          </div>
-                          <div className="col-md-2">
-                            <label className="form-label">Repeats</label>
-                            <input
-                              type="number"
-                              className="form-control"
-                              name="repeats"
-                              value={product.repeats}
-                              onChange={(e) => handleProductChange(index, e)}
-                              required
-                            />
-                          </div>
+                      {selectedProducts.length > 0 ? (
+                        <div className="table-responsive">
+                          <table className="table table-centered table-nowrap mb-0">
+                            <thead className="table-light">
+                              <tr>
+                                <th>Supplier</th>
+                                <th>Dosage</th>
+                                <th>Instructions</th>
+                                <th>Quantity</th>
+                                <th>Repeats</th>
+                                <th>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {selectedProducts.map((product, index) => (
+                                <tr key={index}>
+                                  <td>{product.supplier_name}</td>
+                                  <td>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={product.dosage}
+                                      onChange={(e) =>
+                                        handleProductDetailsChange(
+                                          index,
+                                          "dosage",
+                                          e.target.value
+                                        )
+                                      }
+                                      required
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={product.instructions}
+                                      onChange={(e) =>
+                                        handleProductDetailsChange(
+                                          index,
+                                          "instructions",
+                                          e.target.value
+                                        )
+                                      }
+                                      required
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="number"
+                                      className="form-control"
+                                      value={product.quantity}
+                                      onChange={(e) =>
+                                        handleProductDetailsChange(
+                                          index,
+                                          "quantity",
+                                          e.target.value
+                                        )
+                                      }
+                                      required
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="number"
+                                      className="form-control"
+                                      value={product.repeats}
+                                      onChange={(e) =>
+                                        handleProductDetailsChange(
+                                          index,
+                                          "repeats",
+                                          e.target.value
+                                        )
+                                      }
+                                      required
+                                    />
+                                  </td>
+                                  <td>
+                                    <button
+                                      type="button"
+                                      className="btn btn-danger btn-sm"
+                                      onClick={() => removeProduct(index)}
+                                    >
+                                      <i className="ri-delete-bin-line"></i>
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
-                      ))}
+                      ) : (
+                        <div className="text-center text-muted">
+                          No supplier products added yet. Click "Add Supplier
+                          Product" to add products.
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -320,7 +561,11 @@ const PrescriptionForm = () => {
                   </div>
 
                   <div className="text-end mt-4">
-                    <button type="submit" className="btn btn-primary">
+                    <button 
+                      type="submit" 
+                      className="btn btn-primary"
+                      disabled={!selectedPatient}
+                    >
                       {formLoading ? (
                         <Spinner size="sm" className="me-2" />
                       ) : null}
@@ -400,7 +645,9 @@ const PrescriptionForm = () => {
                         <tr>
                           <td colSpan="7" className="text-center py-4">
                             <Spinner color="primary" />
-                            <span className="ms-2">Loading prescriptions...</span>
+                            <span className="ms-2">
+                              Loading prescriptions...
+                            </span>
                           </td>
                         </tr>
                       ) : searchTerm ? (
@@ -425,17 +672,19 @@ const PrescriptionForm = () => {
                                 ))}
                               </td>
                               <td>
-                                {pres.prescribed_supplier_products.map((p, idx) => (
-                                  <div key={idx} className="mb-1">
-                                    <strong>{p.product}</strong>
-                                    <br />
-                                    Dosage: {p.dosage}
-                                    <br />
-                                    Qty: {p.quantity}, Repeats: {p.repeats}
-                                    <br />
-                                    <em>{p.instructions}</em>
-                                  </div>
-                                ))}
+                                {pres.prescribed_supplier_products.map(
+                                  (p, idx) => (
+                                    <div key={idx} className="mb-1">
+                                      <strong>{p.product}</strong>
+                                      <br />
+                                      Dosage: {p.dosage}
+                                      <br />
+                                      Qty: {p.quantity}, Repeats: {p.repeats}
+                                      <br />
+                                      <em>{p.instructions}</em>
+                                    </div>
+                                  )
+                                )}
                               </td>
                               <td>
                                 <button
@@ -485,17 +734,19 @@ const PrescriptionForm = () => {
                               ))}
                             </td>
                             <td>
-                              {pres.prescribed_supplier_products.map((p, idx) => (
-                                <div key={idx} className="mb-1">
-                                  <strong>{p.product}</strong>
-                                  <br />
-                                  Dosage: {p.dosage}
-                                  <br />
-                                  Qty: {p.quantity}, Repeats: {p.repeats}
-                                  <br />
-                                  <em>{p.instructions}</em>
-                                </div>
-                              ))}
+                              {pres.prescribed_supplier_products.map(
+                                (p, idx) => (
+                                  <div key={idx} className="mb-1">
+                                    <strong>{p.product}</strong>
+                                    <br />
+                                    Dosage: {p.dosage}
+                                    <br />
+                                    Qty: {p.quantity}, Repeats: {p.repeats}
+                                    <br />
+                                    <em>{p.instructions}</em>
+                                  </div>
+                                )
+                              )}
                             </td>
                             <td>
                               <button
@@ -533,27 +784,164 @@ const PrescriptionForm = () => {
         </div>
 
         {/* Search Modal */}
-        <Modal isOpen={isModalOpen} toggle={() => toggleModal(modalType)} centered>
+        <Modal
+          isOpen={isModalOpen}
+          toggle={() => toggleModal(modalType)}
+          centered
+        >
           <ModalHeader toggle={() => toggleModal(modalType)}>
-            {modalType === 'drug' ? 'Search Drugs' : 'Search Supplier Products'}
+            {modalType === "drug" ? "Add Drug" : "Add Supplier Product"}
+          </ModalHeader>
+          <ModalBody>
+            {modalType === "drug" && (
+              <div className="mb-3">
+                <div className="form-check form-switch">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="manualEntrySwitch"
+                    checked={isManualEntry}
+                    onChange={(e) => setIsManualEntry(e.target.checked)}
+                  />
+                  <label className="form-check-label" htmlFor="manualEntrySwitch">
+                    Add New Drug
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {modalType === "drug" && isManualEntry ? (
+              <div className="mb-3">
+                <label className="form-label">Drug Name</label>
+                <div className="d-flex gap-2">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter drug name..."
+                    value={manualDrugName}
+                    onChange={(e) => setManualDrugName(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-primary d-flex align-items-center"
+                    onClick={handleManualDrugAdd}
+                    disabled={!manualDrugName.trim()}
+                  >
+                    <i className="ri-add-line me-1"></i>
+                    Add
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="mb-3">
+                  <label className="form-label">Search</label>
+                  <div className="d-flex gap-2">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder={`Search ${
+                        modalType === "drug" ? "drugs" : "supplier products"
+                      }...`}
+                      value={searchInput}
+                      onChange={handleSearchInput}
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          handleModalSearch();
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-primary d-flex align-items-center"
+                      onClick={handleModalSearch}
+                    >
+                      <i className="ri-search-line me-1"></i>
+                      Search
+                    </button>
+                  </div>
+                </div>
+                {loading ? (
+                  <div className="text-center">
+                    <Spinner color="primary" />
+                    <span className="ms-2">Searching...</span>
+                  </div>
+                ) : (
+                  <div
+                    className="search-results"
+                    style={{ maxHeight: "300px", overflowY: "auto" }}
+                  >
+                    {modalType === "drug" && drugResults?.results?.length > 0 ? (
+                      <ListGroup flush>
+                        {drugResults.results?.map((drug) => (
+                          <ListGroupItem
+                            key={drug.id}
+                            onClick={() => handleDrugSelect(drug)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <i className="ri-medicine-bottle-line align-middle me-2"></i>
+                            {drug.drug_name}
+                          </ListGroupItem>
+                        ))}
+                      </ListGroup>
+                    ) : modalType === "supplier" &&
+                      supplierResults?.results?.length > 0 ? (
+                      <ListGroup flush>
+                        {supplierResults.results?.map((product) => (
+                          <ListGroupItem
+                            key={product.id}
+                            onClick={() => handleProductSelect(product)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <i className="ri-shopping-bag-line align-middle me-2"></i>
+                            {product.product_name} - {product.supplier_name}
+                          </ListGroupItem>
+                        ))}
+                      </ListGroup>
+                    ) : (
+                      <div className="text-center text-muted">
+                        {modalType === "drug"
+                          ? "No drugs found"
+                          : "No supplier products found"}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button color="secondary" onClick={() => toggleModal(modalType)}>
+              Close
+            </Button>
+          </ModalFooter>
+        </Modal>
+
+        {/* Patient Search Modal */}
+        <Modal isOpen={isPatientModalOpen} toggle={togglePatientModal} centered>
+          <ModalHeader toggle={togglePatientModal}>
+            Add Patient
           </ModalHeader>
           <ModalBody>
             <div className="mb-3">
-              <label className="form-label">Search</label>
+              <label className="form-label">Search Patient</label>
               <div className="d-flex gap-2">
                 <input
                   type="text"
                   className="form-control"
-                  placeholder={`Search ${modalType === 'drug' ? 'drugs' : 'supplier products'}...`}
-                  value={searchInput}
-                  onChange={handleSearchInput}
+                  placeholder="Search patients..."
+                  value={patientSearchInput}
+                  onChange={(e) => setPatientSearchInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      handlePatientSearch();
+                    }
+                  }}
                 />
                 <button
                   type="button"
                   className="btn btn-primary d-flex align-items-center"
-                  onClick={() => {
-                    // Add search functionality here
-                  }}
+                  onClick={handlePatientSearch}
                 >
                   <i className="ri-search-line me-1"></i>
                   Search
@@ -566,16 +954,32 @@ const PrescriptionForm = () => {
                 <span className="ms-2">Searching...</span>
               </div>
             ) : (
-              <div className="search-results" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                {/* Results will be populated here */}
-                <div className="text-center text-muted">
-                  {modalType === 'drug' ? 'No drugs found' : 'No supplier products found'}
-                </div>
+              <div className="search-results" style={{ maxHeight: "300px", overflowY: "auto" }}>
+                {patientResults?.results?.length > 0 ? (
+                  <ListGroup flush>
+                    {patientResults.results?.map((patient) => (
+                      <ListGroupItem
+                        key={patient.id}
+                        onClick={() => handlePatientSelect(patient)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <i className="ri-user-line align-middle me-2"></i>
+                        {patient.name}
+                        {patient.email && ` • ${patient.email}`}
+                        {patient.phone && ` • ${patient.phone}`}
+                      </ListGroupItem>
+                    ))}
+                  </ListGroup>
+                ) : (
+                  <div className="text-center text-muted">
+                    No patients found
+                  </div>
+                )}
               </div>
             )}
           </ModalBody>
           <ModalFooter>
-            <Button color="secondary" onClick={() => toggleModal(modalType)}>
+            <Button color="secondary" onClick={togglePatientModal}>
               Close
             </Button>
           </ModalFooter>

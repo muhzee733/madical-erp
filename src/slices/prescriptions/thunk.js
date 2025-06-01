@@ -45,6 +45,34 @@ export const searchPrescriptions = createAsyncThunk(
   }
 );
 
+export const searchDrugs = createAsyncThunk(
+  "prescriptions/searchDrugs",
+  async (searchTerm, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/drugs/?search=${searchTerm}`
+      );
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response || error.message);
+    }
+  }
+);
+
+export const searchSupplierProducts = createAsyncThunk(
+  "prescriptions/searchSupplierProducts",
+  async (searchTerm, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/supplier-products/?search=${searchTerm}`
+      );
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response || error.message);
+    }
+  }
+);
+
 export const downloadPrescriptionPDF = createAsyncThunk(
   "prescriptions/downloadPDF",
   async (prescriptionId, { rejectWithValue }) => {
@@ -54,6 +82,20 @@ export const downloadPrescriptionPDF = createAsyncThunk(
         { responseType: 'blob' }
       );
       return { id: prescriptionId, data: response.data };
+    } catch (error) {
+      return rejectWithValue(error.response || error.message);
+    }
+  }
+);
+
+export const searchPatients = createAsyncThunk(
+  "prescriptions/searchPatients",
+  async (searchTerm, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/prescription/patient/?search=${searchTerm}`
+      );
+      return response;
     } catch (error) {
       return rejectWithValue(error.response || error.message);
     }

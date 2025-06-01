@@ -1,9 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createPrescription, searchDrug, getPrescription, downloadPrescriptionPDF, searchPrescriptions } from "./thunk";
+import { createPrescription, searchDrugs, getPrescription, downloadPrescriptionPDF, searchPrescriptions, searchSupplierProducts, searchPatients } from "./thunk";
 
 const initialState = {
   prescriptions: [],
   searchResults: [],
+  drugResults: [],
+  supplierResults: [],
+  patientResults: [],
   loading: false,
   formLoading: false,
   error: null,
@@ -66,6 +69,48 @@ const prescriptionSlice = createSlice({
         state.searchResults = action.payload;
       })
       .addCase(searchPrescriptions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Search Drugs
+      .addCase(searchDrugs.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(searchDrugs.fulfilled, (state, action) => {
+        state.loading = false;
+        state.drugResults = action.payload;
+      })
+      .addCase(searchDrugs.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Search Supplier Products
+      .addCase(searchSupplierProducts.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(searchSupplierProducts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.supplierResults = action.payload;
+      })
+      .addCase(searchSupplierProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Search Patients
+      .addCase(searchPatients.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(searchPatients.fulfilled, (state, action) => {
+        state.loading = false;
+        state.patientResults = action.payload;
+      })
+      .addCase(searchPatients.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
