@@ -20,6 +20,7 @@ import {
   ListGroupItem,
 } from "reactstrap";
 import debounce from "lodash/debounce";
+import { resetPrescriptionState, clearSuccess } from "../slices/prescriptions/slice";
 
 const PrescriptionForm = () => {
   const dispatch = useDispatch();
@@ -129,9 +130,11 @@ const PrescriptionForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    dispatch(clearSuccess()); // Clear any existing success message
 
     const payload = {
       notes: formData.notes,
+      patient: 2,
       prescribed_drugs: selectedDrugs.map((drug) => ({
         drug: drug.id,
         dosage: drug.dosage,
@@ -264,6 +267,13 @@ const PrescriptionForm = () => {
     dispatch({ type: "prescriptions/searchPatients/fulfilled", payload: { results: [] } });
     togglePatientModal();
   };
+
+  // Clear success message when component unmounts
+  useEffect(() => {
+    return () => {
+      dispatch(clearSuccess());
+    };
+  }, [dispatch]);
 
   return (
     <div className="page-content">
@@ -564,7 +574,7 @@ const PrescriptionForm = () => {
                     <button 
                       type="submit" 
                       className="btn btn-primary"
-                      disabled={!selectedPatient}
+                      
                     >
                       {formLoading ? (
                         <Spinner size="sm" className="me-2" />
@@ -574,12 +584,14 @@ const PrescriptionForm = () => {
                   </div>
 
                   {success && (
-                    <div className="alert alert-success mt-3">
+                    <div className="alert alert-success mt-3" role="alert">
+                      <i className="ri-check-double-line me-1 align-middle"></i>
                       Prescription created successfully!
                     </div>
                   )}
                   {error && (
-                    <div className="alert alert-danger mt-3">
+                    <div className="alert alert-danger mt-3" role="alert">
+                      <i className="ri-error-warning-line me-1 align-middle"></i>
                       Error: {error?.message || "Failed to submit"}
                     </div>
                   )}

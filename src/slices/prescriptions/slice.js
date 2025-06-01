@@ -24,6 +24,9 @@ const prescriptionSlice = createSlice({
       state.error = null;
       state.success = false;
     },
+    clearSuccess: (state) => {
+      state.success = false;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -31,6 +34,7 @@ const prescriptionSlice = createSlice({
       .addCase(createPrescription.pending, (state) => {
         state.formLoading = true;
         state.error = null;
+        state.success = false;
       })
       .addCase(createPrescription.fulfilled, (state, action) => {
         state.formLoading = false;
@@ -43,6 +47,7 @@ const prescriptionSlice = createSlice({
       .addCase(createPrescription.rejected, (state, action) => {
         state.formLoading = false;
         state.error = action.payload;
+        state.success = false;
       })
 
       // Get Prescription
@@ -140,5 +145,5 @@ const prescriptionSlice = createSlice({
   },
 });
 
-export const { resetPrescriptionState } = prescriptionSlice.actions;
+export const { resetPrescriptionState, clearSuccess } = prescriptionSlice.actions;
 export default prescriptionSlice.reducer;
