@@ -1,7 +1,55 @@
-import React from "react";
-import { Offcanvas, OffcanvasHeader, OffcanvasBody, Button, ListGroup, ListGroupItem, Badge, Card, CardBody } from "reactstrap";
+import React, { useState } from "react";
+import { Offcanvas, OffcanvasHeader, OffcanvasBody, Button, ListGroup, ListGroupItem, Badge, Card, CardBody, Alert } from "reactstrap";
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
 const CartOffcanvas = ({ isOpen, toggle, cartItems, onRemoveItem, onCheckout }) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+
+  const handleBookAppointment = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const token = Cookies.get('authUser');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/appointments/`,
+        {
+          availability: cartItems[0].id
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        }
+      );
+
+      if (response) {
+        setSuccess(true);
+        onCheckout(); // Clear cart and close offcanvas
+      }
+    } catch (error) {
+      // Handle specific error for already booked appointment
+      if (error.response?.data?.availability && 
+          Array.isArray(error.response.data.availability) && 
+          error.response.data.availability.includes("appointment with this availability already exists.")) {
+        setError("This time slot has already been booked. Please select another time.");
+        // Remove the booked slot from cart
+        onRemoveItem(cartItems[0].id);
+      } else {
+        setError(error.response?.data?.message || 'Failed to book appointment');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Offcanvas isOpen={isOpen} toggle={toggle} direction="end">
       <OffcanvasHeader toggle={toggle}>
@@ -75,14 +123,39 @@ const CartOffcanvas = ({ isOpen, toggle, cartItems, onRemoveItem, onCheckout }) 
                 </ListGroupItem>
               ))}
             </ListGroup>
+
+            {error && (
+              <Alert color="danger" className="mt-3">
+                <i className="ri-error-warning-line me-2"></i>
+                {error}
+              </Alert>
+            )}
+
+            {success && (
+              <Alert color="success" className="mt-3">
+                <i className="ri-checkbox-circle-line me-2"></i>
+                Appointment booked successfully!
+              </Alert>
+            )}
+
             <div className="mt-4">
               <Button
                 color="primary"
                 className="w-100"
-                onClick={onCheckout}
+                onClick={handleBookAppointment}
+                disabled={loading}
               >
-                <i className="ri-checkbox-circle-line me-2"></i>
-                Checkout ({cartItems.length})
+                {loading ? (
+                  <>
+                    <i className="ri-loader-4-line me-2"></i>
+                    Booking...
+                  </>
+                ) : (
+                  <>
+                    <i className="ri-calendar-check-line me-2"></i>
+                    Book Appointment
+                  </>
+                )}
               </Button>
             </div>
           </>
