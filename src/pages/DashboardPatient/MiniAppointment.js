@@ -1,269 +1,83 @@
-import React, { useCallback, useEffect, useState, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { getAppointments } from "../../slices/appointments/thunk";
-import { addAppointmentToCart } from "../../slices/cart/thunk";
-import { getOrders } from "../../slices/OrderAppointment/thunk";
-import classnames from "classnames";
-import dayjs from "dayjs";
-import { useNavigate } from "react-router-dom";
-import {
-  Card,
-  CardBody,
-  CardTitle,
-  Row,
-  Col,
-  Button,
-  Spinner,
-  ListGroup,
-  ListGroupItem,
-  Nav,
-  NavItem,
-  NavLink,
-  TabContent,
-  TabPane,
-  CardText,
-} from "reactstrap";
-import AppointmentTable from "../../Components/Common/AppointmentTable";
+import React from "react";
+import { Card, CardBody, CardHeader, Spinner, Button, Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap";
+import { useState } from "react";
 
-const MiniAppointment = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+const MiniAppointment = ({ doctor, appointments, onBookSlot, loading }) => {
+  const [activeTab, setActiveTab] = useState("1");
 
-  const { appointments = [], error } = useSelector(
-    (state) => state.Appointment || {}
-  );
-  const { items: cartItems } = useSelector((state) => state.Cart || {});
-  const {
-    orders,
-    loading: ordersLoading,
-    error: ordersError,
-  } = useSelector((state) => state.OrderAppointment);
-
-  const [loading, setLoading] = useState(true);
-  const [loadingAppointmentId, setLoadingAppointmentId] = useState(null);
-  const [activeDateTab, setActiveDateTab] = useState({});
-
-  const days = useMemo(
-    () => ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    []
-  );
-
-  useEffect(() => {
-    dispatch(getAppointments());
-    setLoading(false);
-  }, [dispatch]);
-
-  const handleAddToCart = (appointment) => {
-    setLoadingAppointmentId(appointment.id);
-    dispatch(addAppointmentToCart(appointment));
-    setLoadingAppointmentId(null);
-  };
-
-  useEffect(() => {
-    if (appointments?.doctors?.length) {
-      const newActiveTabs = {};
-      const today = dayjs().startOf('day');
-
-      appointments.doctors.forEach((doctor) => {
-        const futureDates = doctor.appointments
-          .map((a) => a.date)
-          .filter(date => dayjs(date).isAfter(today) || dayjs(date).isSame(today, 'day'));
-        
-        const uniqueDates = [...new Set(futureDates)];
-        if (uniqueDates.length > 0) {
-          newActiveTabs[doctor.id] = uniqueDates[0];
-        }
-      });
-
-      setActiveDateTab(newActiveTabs);
+  // Group appointments by date
+  const appointmentsByDate = appointments?.results?.reduce((acc, slot) => {
+    if (slot.doctor === doctor.id && !slot.is_booked) {
+      const date = new Date(slot.start_time).toLocaleDateString();
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(slot);
     }
-  }, [appointments]);
+    return acc;
+  }, {}) || {};
 
-  const isInCart = useCallback(
-    (appointmentId) => cartItems.some((item) => item.id === appointmentId),
-    [cartItems]
-  );
-
-  const toggleDateTab = (doctorId, date) => {
-    setActiveDateTab((prev) => ({
-      ...prev,
-      [doctorId]: date,
-    }));
-  };
-
-  if (loading) {
-    return (
-      <Col sm="12" className="text-center">
-        <Spinner color="primary" />
-      </Col>
-    );
-  }
-
-  if (error) {
-    return (
-      <Col sm="12">
-        <Card>
-          <CardBody>
-            <CardTitle tag="h5">Error</CardTitle>
-            <CardText>{error}</CardText>
-          </CardBody>
-        </Card>
-      </Col>
-    );
-  }
+  const dates = Object.keys(appointmentsByDate).sort((a, b) => new Date(a) - new Date(b));
 
   return (
-    <div>
-      <Row>
-        {appointments?.doctors?.map((doctor) => {
-          const today = dayjs().startOf('day');
-          const uniqueDates = [
-            ...new Set(
-              doctor.appointments
-                .filter(appointment => 
-                  dayjs(appointment.date).isAfter(today) || 
-                  dayjs(appointment.date).isSame(today, 'day')
-                )
-                .map((a) => a.date)
-            ),
-          ];
-
-          return (
-            <Col sm="12" key={doctor.id}>
-              <Card>
-                <CardBody>
-                  <CardTitle tag="h4" className="mb-4">
-                    <span>Book Your Appointment</span> <strong>(15 Min)</strong>
-                    <h6 className="mt-2">
-                      Doctor: {doctor.first_name} {doctor.last_name}
-                    </h6>
-                  </CardTitle>
-
-                  {/* Tabs for Dates */}
-                  <Nav tabs className="nav-tabs-custom mb-3">
-                    {uniqueDates.length > 0 ? (
-                      uniqueDates.map((date, idx) => (
-                        <NavItem key={idx}>
-                          <NavLink
-                            href="#"
-                            className={classnames({
-                              active: activeDateTab[doctor.id] === date,
-                            })}
-                            onClick={() => toggleDateTab(doctor.id, date)}
-                          >
-                            {dayjs(date).format("ddd, DD MMM")}
-                          </NavLink>
-                        </NavItem>
-                      ))
-                    ) : (
-                      <Col sm="12" className="text-center">
-                        <CardText>No future appointments available</CardText>
-                      </Col>
-                    )}
-                  </Nav>
-
-                  {/* Appointment Times */}
-                  {uniqueDates.length > 0 ? (
-                    <TabContent
-                      activeTab={activeDateTab[doctor.id] || uniqueDates[0]}
-                      className="pt-3"
-                    >
-                      {uniqueDates.map((date) => (
-                        <TabPane tabId={date} key={date}>
-                          <Row className="gy-3">
-                            {doctor.appointments
-                              .filter(
-                                (appointment) =>
-                                  appointment.date === date &&
-                                  !appointment.is_booked &&
-                                  (dayjs(appointment.date).isAfter(today) || 
-                                   dayjs(appointment.date).isSame(today, 'day'))
-                              )
-                              .map((appointment) => (
-                                <Col md={4} key={appointment.id}>
-                                  <div className="border p-3 text-center rounded">
-                                    <h6 className="mb-1">
-                                      {appointment.start_time.slice(0, 5)}
-                                    </h6>
-                                    {isInCart(appointment.id) ? (
-                                      <Button
-                                        color="success"
-                                        onClick={() =>
-                                          navigate("/checkout", {
-                                            state: {
-                                              appointmentId: appointment.id,
-                                            },
-                                          })
-                                        }
-                                        size="sm"
-                                        className="mt-2"
-                                      >
-                                        Go to Checkout
-                                      </Button>
-                                    ) : (
-                                      <Button
-                                        color="primary"
-                                        onClick={() =>
-                                          handleAddToCart(appointment)
-                                        }
-                                        size="sm"
-                                        className="mt-2"
-                                      >
-                                        {loadingAppointmentId ===
-                                        appointment.id ? (
-                                          <Spinner size="sm" />
-                                        ) : (
-                                          "Book Now"
-                                        )}
-                                      </Button>
-                                    )}
-                                  </div>
-                                </Col>
-                              ))}
-                          </Row>
-                        </TabPane>
-                      ))}
-                    </TabContent>
-                  ) : null}
-                </CardBody>
-              </Card>
-            </Col>
-          );
-        })}
-      </Row>
-      <Row>
-        <Col md="8">
-          <AppointmentTable
-            orders={orders}
-            loading={ordersLoading}
-            error={ordersError}
-          />
-        </Col>
-        <Col sm="4">
-          <Card>
-            <CardBody>
-              <CardTitle tag="h5">
-                <strong>Weekly Timing</strong>
-              </CardTitle>
-              <ListGroup>
-                {days.map((day, idx) => (
-                  <ListGroupItem
-                    key={idx}
-                    className="d-flex justify-content-between align-items-center"
+    <Card className="mb-4">
+      <CardHeader className="d-flex justify-content-between align-items-center">
+        <h5 className="card-title mb-0">
+          Dr. {doctor.name}
+        </h5>
+      </CardHeader>
+      <CardBody>
+        {loading ? (
+          <div className="text-center">
+            <Spinner color="primary" />
+            <span className="ms-2">Loading appointments...</span>
+          </div>
+        ) : dates.length > 0 ? (
+          <>
+            <Nav tabs className="nav-tabs-custom">
+              {dates.map((date, index) => (
+                <NavItem key={date}>
+                  <NavLink
+                    className={activeTab === (index + 1).toString() ? "active" : ""}
+                    onClick={() => setActiveTab((index + 1).toString())}
                   >
-                    <div className="d-flex">
-                      <i className="ri-bill-line align-middle me-2"></i>
-                      <h6>{day}</h6>
-                    </div>
-                    <span className="badge bg-success">8:00 AM - 8:00 PM</span>
-                  </ListGroupItem>
-                ))}
-              </ListGroup>
-            </CardBody>
-          </Card>
-        </Col>
-      </Row>
-    </div>
+                    {new Date(date).toLocaleDateString(undefined, {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </NavLink>
+                </NavItem>
+              ))}
+            </Nav>
+            <TabContent activeTab={activeTab} className="p-3">
+              {dates.map((date, index) => (
+                <TabPane key={date} tabId={(index + 1).toString()}>
+                  <div className="d-flex flex-wrap gap-2">
+                    {appointmentsByDate[date].map((slot) => (
+                      <Button
+                        key={slot.id}
+                        color="outline-primary"
+                        onClick={() => onBookSlot(slot)}
+                      >
+                        {new Date(slot.start_time).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </Button>
+                    ))}
+                  </div>
+                </TabPane>
+              ))}
+            </TabContent>
+          </>
+        ) : (
+          <div className="text-center text-muted">
+            No available appointments
+          </div>
+        )}
+      </CardBody>
+    </Card>
   );
 };
 
