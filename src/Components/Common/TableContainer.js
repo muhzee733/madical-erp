@@ -28,29 +28,6 @@ import {
   TaskListGlobalFilter,
 } from "../../Components/Common/GlobalSearchFilter";
 
-// Column Filter
-const Filter = ({
-  column,
-  // table
-}) => {
-  const columnFilterValue = column.getFilterValue();
-
-  return (
-    <>
-      <DebouncedInput
-        type="text"
-        value={(columnFilterValue ?? '')}
-        onChange={(event) => column.setFilterValue(event.target.value)}
-        placeholder="Search..."
-        className="w-36 border shadow rounded"
-        list={column.id + 'list'}
-      />
-      <div className="h-1" />
-    </>
-  );
-};
-
-
 // Global Filter
 const DebouncedInput = ({
   value: initialValue,
@@ -66,7 +43,9 @@ const DebouncedInput = ({
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      onChange(value);
+      if (onChange) {
+        onChange(value);
+      }
     }, debounce);
 
     return () => clearTimeout(timeout);
@@ -75,13 +54,14 @@ const DebouncedInput = ({
   return (
     <input
       {...props}
-      value={value}
+      value={value || ''}
       id="search-bar-0"
       className="form-control search"
       onChange={(e) => setValue(e.target.value)}
     />
   );
 };
+
 const TableContainer = ({
   columns,
   data,
@@ -104,9 +84,9 @@ const TableContainer = ({
   thClass,
   divClass,
   SearchPlaceholder,
-
+  loading,
 }) => {
-  const [columnFilters, setColumnFilters] = useState ([]);
+  const [columnFilters, setColumnFilters] = useState([]);
   const [globalFilter, setGlobalFilter] = useState('');
 
   const fuzzyFilter = (row, columnId, value, addMeta) => {
@@ -207,14 +187,13 @@ const TableContainer = ({
         </CardBody>
       </Row>}
 
-
       <div className={divClass}>
         <Table hover className={tableClass}>
           <thead className={theadClass}>
             {getHeaderGroups().map((headerGroup) => (
               <tr className={trClass} key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <th key={header.id} className={thClass}  {...{
+                  <th key={header.id} className={thClass} {...{
                     onClick: header.column.getToggleSortingHandler(),
                   }}>
                     {header.isPlaceholder ? null : (
@@ -228,11 +207,6 @@ const TableContainer = ({
                           desc: ' ',
                         }
                         [header.column.getIsSorted()] ?? null}
-                        {header.column.getCanFilter() ? (
-                          <div>
-                            <Filter column={header.column} table={table} />
-                          </div>
-                        ) : null}
                       </React.Fragment>
                     )}
                   </th>
@@ -242,22 +216,53 @@ const TableContainer = ({
           </thead>
 
           <tbody>
-            {getRowModel().rows.map((row) => {
-              return (
-                <tr key={row.id}>
-                  {row.getVisibleCells().map((cell) => {
-                    return (
-                      <td key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
+            {loading ? (
+              <tr>
+                <td colSpan={columns.length} className="text-center py-4">
+                  <div className="d-flex justify-content-center align-items-center">
+                    <div className="spinner-border text-primary me-2" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                    <span>Loading data...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : data.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length} className="text-center py-4">
+                  <div className="py-4 text-center">
+                    <div>
+                      <lord-icon
+                        src="https://cdn.lordicon.com/msoeawqm.json"
+                        trigger="loop"
+                        colors="primary:#405189,secondary:#0ab39c"
+                        style={{ width: "72px", height: "72px" }}
+                      ></lord-icon>
+                    </div>
+                    <div className="mt-4">
+                      <h5>Sorry! No Appointments Found</h5>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              getRowModel().rows.map((row) => {
+                return (
+                  <tr key={row.id}>
+                    {row.getVisibleCells().map((cell) => {
+                      return (
+                        <td key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </Table>
       </div>

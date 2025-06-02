@@ -1,74 +1,104 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardBody, Button, Spinner, Container } from "reactstrap";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  Card,
+  CardBody,
+  Button,
+  Container,
+  Accordion,
+  AccordionItem,
+  AccordionHeader,
+  AccordionBody,
+  Spinner,
+  Alert,
+} from "reactstrap";
 import BreadCrumb from "../../Components/Common/BreadCrumb";
+import { useDispatch, useSelector } from "react-redux";
+import { getAppointmentById } from "../../slices/appointments/thunk";
+import { clearSelectedAppointment } from "../../slices/appointments/reducer";
 
 const AppointmentDetails = () => {
-  const { id } = useParams();
   const navigate = useNavigate();
-  const [appointmentDetails, setAppointmentDetails] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  const [open, setOpen] = useState("");
+
+  const { selectedAppointment, loading, error } = useSelector((state) => state.Appointment);
 
   useEffect(() => {
-    const fetchAppointmentDetails = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/appointments/details/${id}/`
-        );
-        setAppointmentDetails(response.appointment);
-        setError(null);
-      } catch (err) {
-        setError(
-          err.response?.message || "Failed to fetch appointment details"
-        );
-        setAppointmentDetails(null);
-      } finally {
-        setLoading(false);
-      }
+    if (id) {
+      dispatch(getAppointmentById(id));
+    }
+    return () => {
+      dispatch(clearSelectedAppointment());
     };
+  }, [dispatch, id]);
 
-    fetchAppointmentDetails();
-  }, [id]);
+  const toggle = (id) => {
+    open === id ? setOpen("") : setOpen(id);
+  };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString();
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   const formatTime = (time) => {
     if (!time) return "";
-    const [hour, minute] = time.split(":");
-    return `${hour}:${minute}`;
+    const date = new Date(time);
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "booked":
+        return "success";
+      case "cancelled_by_patient":
+      case "cancelled_by_doctor":
+        return "danger";
+      case "completed":
+        return "secondary";
+      default:
+        return "info";
+    }
   };
 
   if (loading) {
     return (
-      <div className="text-center py-5">
-        <Spinner color="primary" />
+      <div className="page-content">
+        <Container fluid>
+          <div className="text-center py-5">
+            <Spinner color="primary" />
+          </div>
+        </Container>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-5">
-        <h5 className="text-danger">Error: {error}</h5>
-        <Button color="primary" onClick={() => navigate(-1)}>
-          Go Back
-        </Button>
+      <div className="page-content">
+        <Container fluid>
+          <Alert color="danger">
+            Error: {error}
+          </Alert>
+        </Container>
       </div>
     );
   }
 
-  if (!appointmentDetails) {
+  if (!selectedAppointment) {
     return (
-      <div className="text-center py-5">
-        <h5>Appointment not found</h5>
-        <Button color="primary" onClick={() => navigate(-1)}>
-          Go Back
-        </Button>
+      <div className="page-content">
+        <Container fluid>
+          <Alert color="warning">
+            No appointment details found
+          </Alert>
+        </Container>
       </div>
     );
   }
@@ -76,16 +106,21 @@ const AppointmentDetails = () => {
   return (
     <div className="page-content">
       <Container fluid>
-        <BreadCrumb title="Admin Dashboard" pageTitle="Dashboard" />
+        <BreadCrumb title="Appointment Details" pageTitle="Dashboard" />
         <div className="row">
           <div className="col-12">
             <Card>
               <CardBody>
                 <div className="d-flex justify-content-between align-items-center mb-4">
                   <h4 className="card-title mb-0">Appointment Details</h4>
-                  <Button color="primary" onClick={() => navigate(-1)}>
-                    Back to List
-                  </Button>
+                  <div>
+                    <Button color="success" className="me-2" onClick={() => navigate(`/chat/${selectedAppointment.id}`)}>
+                      Go for Chat
+                    </Button>
+                    <Button color="primary" onClick={() => navigate(-1)}>
+                      Back to List
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="table-responsive">
@@ -93,75 +128,66 @@ const AppointmentDetails = () => {
                     <tbody>
                       <tr>
                         <th style={{ width: "200px" }}>Appointment ID</th>
-                        <td>{appointmentDetails.id}</td>
+                        <td>{selectedAppointment.id}</td>
                       </tr>
                       <tr>
-                        <th>Doctor Name</th>
-                        <td>{`${appointmentDetails.doctor.first_name} ${appointmentDetails.doctor.last_name}`}</td>
+                        <th>Patient Name</th>
+                        <td>
+                          {selectedAppointment.patient.first_name}{" "}
+                          {selectedAppointment.patient.last_name}
+                        </td>
                       </tr>
                       <tr>
-                        <th>Doctor Email</th>
-                        <td>{appointmentDetails.doctor.email}</td>
+                        <th>Patient Email</th>
+                        <td>{selectedAppointment.patient.email}</td>
                       </tr>
                       <tr>
-                        <th>Date</th>
-                        <td>{formatDate(appointmentDetails.date)}</td>
-                      </tr>
-                      <tr>
-                        <th>Time</th>
-                        <td>{`${formatTime(
-                          appointmentDetails.start_time
-                        )} - ${formatTime(appointmentDetails.end_time)}`}</td>
+                        <th>Patient Phone</th>
+                        <td>{selectedAppointment.patient.phone_number}</td>
                       </tr>
                       <tr>
                         <th>Status</th>
                         <td>
-                          <span
-                            className={`badge bg-${getStatusColor(
-                              appointmentDetails.order.status
-                            )}`}
-                          >
-                            {appointmentDetails.order.status}
+                          <span className={`badge bg-${getStatusColor(selectedAppointment.status)}`}>
+                            {selectedAppointment.status.replace(/_/g, ' ')}
                           </span>
                         </td>
                       </tr>
                       <tr>
-                        <th>Price</th>
-                        <td>${appointmentDetails.price}</td>
+                        <th>Booked At</th>
+                        <td>{formatDate(selectedAppointment.booked_at)}</td>
                       </tr>
-                      <tr>
-                        <th>Order ID</th>
-                        <td>{appointmentDetails.order.id}</td>
-                      </tr>
-                      <tr>
-                        <th>Payment Status</th>
-                        <td>
-                          <span
-                            className={`badge bg-${getPaymentStatusColor(
-                              appointmentDetails.order.status
-                            )}`}
-                          >
-                            {appointmentDetails.order.status}
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <th>Created At</th>
-                        <td>
-                          {new Date(
-                            appointmentDetails.created_at
-                          ).toLocaleString()}
-                        </td>
-                      </tr>
+                      {selectedAppointment.note && (
+                        <tr>
+                          <th>Note</th>
+                          <td>{selectedAppointment.note}</td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
 
-                <div className="mt-3">
-                  <Button color="success" className="me-2">
-                    Confirm Appointment
-                  </Button>
-                  <Button color="danger">Cancel Appointment</Button>
+                {/* Keep the Q&A Accordion */}
+                <div className="mt-4">
+                  <h5 className="mb-3">Frequently Asked Questions</h5>
+                  <Accordion open={open} toggle={toggle}>
+                    <AccordionItem>
+                      <AccordionHeader targetId="1">
+                        Do I need to bring any medical documents?
+                      </AccordionHeader>
+                      <AccordionBody accordionId="1">
+                        Yes, please bring your previous prescriptions and reports.
+                      </AccordionBody>
+                    </AccordionItem>
+                    <AccordionItem>
+                      <AccordionHeader targetId="2">
+                        Can I reschedule the appointment?
+                      </AccordionHeader>
+                      <AccordionBody accordionId="2">
+                        Yes, contact the clinic 24 hours before the scheduled time.
+                      </AccordionBody>
+                    </AccordionItem>
+                  </Accordion>
                 </div>
               </CardBody>
             </Card>
@@ -170,32 +196,6 @@ const AppointmentDetails = () => {
       </Container>
     </div>
   );
-};
-
-const getStatusColor = (status) => {
-  switch (status) {
-    case "pending":
-      return "warning";
-    case "paid":
-      return "success";
-    case "cancelled":
-      return "danger";
-    default:
-      return "secondary";
-  }
-};
-
-const getPaymentStatusColor = (status) => {
-  switch (status) {
-    case "paid":
-      return "success";
-    case "pending":
-      return "warning";
-    case "failed":
-      return "danger";
-    default:
-      return "secondary";
-  }
 };
 
 export default AppointmentDetails;

@@ -32,73 +32,51 @@ const AppointmentTable = ({ appointments, loading, error }) => {
     () => [
       {
         header: "#",
-        accessorKey: "index", 
+        accessorKey: "index",
         enableColumnFilter: false,
         enableSorting: false,
         cell: (cell) => <span>{cell.row.index + 1}</span>,
       },
       {
-        header: "Created At",
-        accessorKey: "created_at",
-        enableColumnFilter: false,
-        cell: (cell) => (
-          <span>
-            {new Date(cell.getValue()).toLocaleString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
-          </span>
-        ),
-      },
-      {
-        header: "Date",
-        accessorKey: "start_time",
-        enableColumnFilter: false,
-        cell: (cell) => <span>{formatDate(cell.getValue())}</span>,
-      },
-      {
-        header: "Start Time",
-        accessorKey: "start_time",
-        enableColumnFilter: false,
-        cell: (cell) => <span>{formatTime(cell.getValue())}</span>,
-      },
-      {
-        header: "End Time",
-        accessorKey: "end_time",
-        enableColumnFilter: false,
-        cell: (cell) => <span>{formatTime(cell.getValue())}</span>,
-      },
-      {
-        header: "Slot Type",
-        accessorKey: "slot_type",
-        enableColumnFilter: false,
-        cell: (cell) => {
-          const slotType = cell.getValue();
-          return <span className="text-capitalize">{slotType}</span>;
+        header: "Patient Name",
+        accessorKey: "patient.full_name",
+        cell: ({ row }) => {
+          const patient = row.original.patient || {};
+          return <span>{patient.first_name || ''} {patient.last_name || ''}</span>;
         },
-      }
-      ,
+      },
       {
-        header: "Is Booked",
-        accessorKey: "is_booked",
-        enableColumnFilter: false,
-        cell: (cell) => {
-          const isBooked = cell.getValue();
-          const badgeColor = isBooked ? "success" : "warning";
-          const status = isBooked ? "Yes" : "No";
-          return (
-            <span className={`badge bg-${badgeColor} p-2`}>
-              {status}
-            </span>
-          );
+        header: "Email",
+        accessorKey: "patient.email",
+        cell: ({ row }) => <span>{row.original.patient?.email || ''}</span>,
+      },
+      {
+        header: "Status",
+        accessorKey: "status",
+        cell: ({ getValue }) => {
+          const value = getValue();
+          const badgeColor = value === "booked" ? "success" : "danger";
+          return <span className={`badge bg-${badgeColor} text-capitalize`}>{value?.replace(/_/g, ' ') || ''}</span>;
+        },
+      },
+      {
+        header: "Booked At",
+        accessorKey: "booked_at",
+        cell: ({ getValue }) => {
+          const value = getValue();
+          if (!value) return '';
+          return new Date(value).toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          });
         },
       },
       {
         header: "Action",
-        accessorKey: "",
+        accessorKey: "id",
         cell: (cell) => (
           <button
             className="btn btn-sm btn-primary"
@@ -109,22 +87,26 @@ const AppointmentTable = ({ appointments, loading, error }) => {
         ),
       }
     ],
-    []
+    [handleViewAppointment]
   );
+  
 
   return (
     <div className="col-xl-12">
       <div className="card">
         <div className="card-body pt-0">
-          {loading ? (
-            <div className="text-center py-5">
-              <Spinner color="primary" />
-            </div>
-          ) : error ? (
+          {error ? (
             <div className="text-center py-5">
               <h5 className="text-danger">Error: {error}</h5>
             </div>
-          ) : appointments && appointments?.results?.length > 0 ? (
+          ) : loading || !appointments?.results ? (
+            <div className="text-center py-5">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <p className="mt-2">Loading appointments...</p>
+            </div>
+          ) : (
             <TableContainer
               columns={columns}
               data={appointments?.results || []}
@@ -132,25 +114,12 @@ const AppointmentTable = ({ appointments, loading, error }) => {
               isAddUserList={false}
               customPageSize={10}
               divClass="table-responsive mb-1"
-              tableClass="mb-0 align-middle table-borderless"
+              tableClass="mb-0 align-middle table-bordered"
               theadClass="table-light text-muted"
               isProductsFilter={false}
               SearchPlaceholder="Search Appointments..."
+              loading={false}
             />
-          ) : (
-            <div className="py-4 text-center">
-              <div>
-                <lord-icon
-                  src="https://cdn.lordicon.com/msoeawqm.json"
-                  trigger="loop"
-                  colors="primary:#405189,secondary:#0ab39c"
-                  style={{ width: "72px", height: "72px" }}
-                ></lord-icon>
-              </div>
-              <div className="mt-4">
-                <h5>Sorry! No Appointments Found</h5>
-              </div>
-            </div>
           )}
         </div>
       </div>
