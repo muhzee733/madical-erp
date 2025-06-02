@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getPatientAppointments } from "../../slices/PatientAppointment/thunk";
-import { addToCart, removeFromCart } from "../../slices/PatientAppointment/cartSlice";
+import {
+  addToCart,
+  removeFromCart,
+} from "../../slices/PatientAppointment/cartSlice";
 import MiniAppointment from "./MiniAppointment";
 import CartOffcanvas from "./CartOffcanvas";
 import { Button, Spinner, Alert } from "reactstrap";
+import AllAppointments from "./AllAppointments";
+import MyAppointments from "./MyAppointments";
 
 const DashboardPatient = () => {
   const dispatch = useDispatch();
-  const { appointments, loading, error } = useSelector((state) => state.patientAppointment);
+  const { appointments, loading, error } = useSelector(
+    (state) => state.patientAppointment
+  );
   const cartItems = useSelector((state) => state.appointmentCart.items);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -31,11 +38,13 @@ const DashboardPatient = () => {
   };
 
   // Group doctors from appointments
-  const doctors = [...new Set(appointments?.results?.map(slot => slot.doctor) || [])].map(doctorId => {
-    const slot = appointments?.results?.find(s => s.doctor === doctorId);
+  const doctors = [
+    ...new Set(appointments?.results?.map((slot) => slot.doctor) || []),
+  ].map((doctorId) => {
+    const slot = appointments?.results?.find((s) => s.doctor === doctorId);
     return {
       id: doctorId,
-      name: `Doctor ${doctorId}` // You might want to fetch doctor names from an API
+      name: `Doctor ${doctorId}`, // You might want to fetch doctor names from an API
     };
   });
 
@@ -68,9 +77,7 @@ const DashboardPatient = () => {
                     <span className="ms-2">Loading appointments...</span>
                   </div>
                 ) : error ? (
-                  <Alert color="danger">
-                    {error}
-                  </Alert>
+                  <Alert color="danger">{error}</Alert>
                 ) : (
                   <div className="row">
                     {doctors.map((doctor) => (
@@ -87,6 +94,12 @@ const DashboardPatient = () => {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+
+        <div className="row mt-4">
+          <div className="col-12">
+            <MyAppointments />
           </div>
         </div>
       </div>
