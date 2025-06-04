@@ -151,7 +151,34 @@ const PrescriptionForm = () => {
       })),
     };
 
-    dispatch(createPrescription(payload));
+    dispatch(createPrescription(payload)).then(() => {
+      // Reset form after successful submission
+      setFormData({
+        patient: "",
+        notes: "",
+        prescribed_drugs: [
+          {
+            drug: "",
+            dosage: "",
+            instructions: "",
+            quantity: "",
+            repeats: "",
+          },
+        ],
+        prescribed_supplier_products: [
+          {
+            product: "",
+            dosage: "",
+            instructions: "",
+            quantity: "",
+            repeats: "",
+          },
+        ],
+      });
+      setSelectedDrugs([]);
+      setSelectedProducts([]);
+      setSelectedPatient(null);
+    });
   };
 
   const handleSearch = () => {
@@ -790,6 +817,62 @@ const PrescriptionForm = () => {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Pagination */}
+                {!searchTerm && prescriptions?.count > 0 && (
+                  <div className="d-flex justify-content-between align-items-center mt-3">
+                    <div className="text-muted">
+                      Showing {((prescriptions.current_page - 1) * prescriptions.page_size) + 1} to {Math.min(prescriptions.current_page * prescriptions.page_size, prescriptions.count)} of {prescriptions.count} entries
+                    </div>
+                    <nav aria-label="Page navigation">
+                      <ul className="pagination pagination-rounded mb-0">
+                        <li className={`page-item ${prescriptions.current_page === 1 ? 'disabled' : ''}`}>
+                          <button 
+                            className="page-link" 
+                            onClick={() => dispatch(getPrescription(prescriptions.current_page - 1))}
+                            disabled={prescriptions.current_page === 1}
+                          >
+                            <i className="ri-arrow-left-s-line"></i>
+                          </button>
+                        </li>
+                        {(() => {
+                          const totalPages = Math.ceil(prescriptions.count / prescriptions.page_size);
+                          const maxVisiblePages = 5;
+                          let startPage = Math.max(1, prescriptions.current_page - Math.floor(maxVisiblePages / 2));
+                          let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                          
+                          if (endPage - startPage + 1 < maxVisiblePages) {
+                            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                          }
+
+                          const pages = [];
+                          for (let i = startPage; i <= endPage; i++) {
+                            pages.push(
+                              <li key={i} className={`page-item ${prescriptions.current_page === i ? 'active' : ''}`}>
+                                <button 
+                                  className="page-link"
+                                  onClick={() => dispatch(getPrescription(i))}
+                                >
+                                  {i}
+                                </button>
+                              </li>
+                            );
+                          }
+                          return pages;
+                        })()}
+                        <li className={`page-item ${prescriptions.current_page === Math.ceil(prescriptions.count / prescriptions.page_size) ? 'disabled' : ''}`}>
+                          <button 
+                            className="page-link"
+                            onClick={() => dispatch(getPrescription(prescriptions.current_page + 1))}
+                            disabled={prescriptions.current_page === Math.ceil(prescriptions.count / prescriptions.page_size)}
+                          >
+                            <i className="ri-arrow-right-s-line"></i>
+                          </button>
+                        </li>
+                      </ul>
+                    </nav>
+                  </div>
+                )}
               </div>
             </div>
           </div>
