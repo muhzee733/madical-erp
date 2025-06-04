@@ -1,11 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getAppointments, getAppointmentById } from "./thunk";
+import { getAppointments, getAppointmentById, getDoctorSchedules } from "./thunk";
 
 export const initialState = {
   appointments: [],
   selectedAppointment: null,
+  doctorSchedules: [],
   error: null,
   loading: false,
+  lastUpdated: null,
 };
 
 const appointmentSlice = createSlice({
@@ -26,6 +28,7 @@ const appointmentSlice = createSlice({
         state.loading = false;
         state.appointments = action.payload;
         state.error = null;
+        state.lastUpdated = Date.now();
       })
       .addCase(getAppointments.rejected, (state, action) => {
         state.loading = false;
@@ -41,6 +44,19 @@ const appointmentSlice = createSlice({
         state.error = null;
       })
       .addCase(getAppointmentById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Something went wrong!";
+      })
+      .addCase(getDoctorSchedules.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getDoctorSchedules.fulfilled, (state, action) => {
+        state.loading = false;
+        state.doctorSchedules = action.payload.results;
+        state.error = null;
+      })
+      .addCase(getDoctorSchedules.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Something went wrong!";
       });

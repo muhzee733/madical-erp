@@ -49,12 +49,10 @@ const DoctorScheduleTime = () => {
           <CardBody>
             <div className="table-responsive table-card">
               {loading ? (
-                // Loader when data is loading
                 <div className="d-flex justify-content-center">
                   <Spinner color="primary" />
                 </div>
               ) : schedules.length === 0 ? (
-                // Message if no schedules are found
                 <div className="d-flex justify-content-center">
                   <p>No Schedule Appointment Available</p>
                 </div>

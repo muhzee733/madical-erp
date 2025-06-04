@@ -146,6 +146,37 @@ const AppointmentDetails = () => {
                         <td>{selectedAppointment.patient.phone_number}</td>
                       </tr>
                       <tr>
+                        <th>Doctor Name</th>
+                        <td>
+                          {selectedAppointment.availability?.doctor?.first_name}{" "}
+                          {selectedAppointment.availability?.doctor?.last_name}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th>Doctor Email</th>
+                        <td>{selectedAppointment.availability?.doctor?.email}</td>
+                      </tr>
+                      <tr>
+                        <th>Appointment Time</th>
+                        <td>
+                          {formatDate(selectedAppointment.availability?.start_time)} at{" "}
+                          {formatTime(selectedAppointment.availability?.start_time)} -{" "}
+                          {formatTime(selectedAppointment.availability?.end_time)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th>Slot Type</th>
+                        <td className="text-capitalize">{selectedAppointment.availability?.slot_type}</td>
+                      </tr>
+                      <tr>
+                        <th>Timezone</th>
+                        <td>{selectedAppointment.availability?.timezone}</td>
+                      </tr>
+                      <tr>
+                        <th>Created At</th>
+                        <td>{formatDate(selectedAppointment.availability?.created_at)}</td>
+                      </tr>
+                      <tr>
                         <th>Status</th>
                         <td>
                           <span className={`badge bg-${getStatusColor(selectedAppointment.status)}`}>

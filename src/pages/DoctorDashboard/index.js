@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { Col, Container, Row, Card, CardBody } from "reactstrap";
 import BreadCrumb from "../../Components/Common/BreadCrumb";
 import DoctorAuthWrapper from "../../Routes/DoctorAuthWrapper";
@@ -10,11 +10,19 @@ const DoctorDashboard = () => {
   const dispatch = useDispatch();
   document.title = "Doctor Dashboard | Velzon - React Admin & Dashboard Template";
 
-  useEffect(() => {
-    dispatch(getAppointments());
-  }, [dispatch]);
+  const { appointments, error, loading, lastUpdated } = useSelector((state) => state.Appointment);
 
-  const {appointments, error, loading} = useSelector((state) => state.Appointment);
+  const fetchAppointments = useCallback(() => {
+    // Only fetch if data is older than 5 minutes or doesn't exist
+    const shouldFetch = !lastUpdated || (Date.now() - lastUpdated > 5 * 60 * 1000);
+    if (shouldFetch) {
+      dispatch(getAppointments());
+    }
+  }, [dispatch, lastUpdated]);
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
 
   return (
     <React.Fragment>
@@ -31,6 +39,7 @@ const DoctorDashboard = () => {
                       appointments={appointments} 
                       loading={loading} 
                       error={error}
+                      onRefresh={fetchAppointments}
                     />
                   </CardBody>
                 </Card>

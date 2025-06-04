@@ -46,3 +46,25 @@ export const getAppointmentById = createAsyncThunk(
     }
   }
 );
+
+export const getDoctorSchedules = createAsyncThunk(
+  "appointments/getDoctorSchedules",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = Cookies.get('authUser');
+      if (!token) {
+        return rejectWithValue("No authentication token found");
+      }
+
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/appointments/availabilities/list/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+      return response;
+    
+    } catch (error) {
+      return rejectWithValue(error.response || error.message);
+    }
+  }
+);

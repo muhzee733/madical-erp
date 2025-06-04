@@ -21,7 +21,7 @@ import { useMemo } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { getAppointments } from "../../slices/thunks";
+import { getAppointments, getDoctorSchedules } from "../../slices/thunks";
 
 const Appointment = () => {
   const dispatch = useDispatch();
@@ -40,6 +40,7 @@ const Appointment = () => {
 
   const localLoading = true;
   const {
+    doctorSchedules,
     appointments,
     loading: reduxLoading,
     error,
@@ -77,8 +78,9 @@ const Appointment = () => {
     }
   };
 
+
   useEffect(() => {
-    dispatch(getAppointments());
+    dispatch(getDoctorSchedules());
     setLoading(false);
     const userCookie = Cookies.get("user");
     if (userCookie) {
@@ -207,7 +209,7 @@ const Appointment = () => {
     <div className="page-content">
       <DoctorAuthWrapper>
         <Container fluid>
-          <BreadCrumb title="Appointment" pageTitle="Pages" />
+          <BreadCrumb title="Schedule Time" pageTitle="Pages" />
 
           <Row className="mt-4">
             <Col md={6}>
@@ -310,8 +312,8 @@ const Appointment = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {appointments?.results?.length > 0 ? (
-                            appointments.results.map((slot, index) => (
+                          {doctorSchedules?.length > 0 ? (
+                            doctorSchedules?.map((slot, index) => (
                               <tr key={slot.id}>
                                 <td>{index + 1}</td>
                                 <td>
@@ -323,7 +325,7 @@ const Appointment = () => {
                                 <td>
                                   {new Date(slot.end_time).toLocaleString()}
                                 </td>
-                                <td>{slot.slot_type}</td>
+                                <td className="text-capitalize">{slot.slot_type}</td>
                                 <td>
                                   {slot.is_booked ? (
                                     <span className="badge bg-danger">
@@ -331,7 +333,7 @@ const Appointment = () => {
                                     </span>
                                   ) : (
                                     <span className="badge bg-success">
-                                      Not Booked
+                                      Available
                                     </span>
                                   )}
                                 </td>
@@ -349,7 +351,7 @@ const Appointment = () => {
                             ))
                           ) : (
                             <tr>
-                              <td colSpan="6" className="text-center">
+                              <td colSpan="8" className="text-center">
                                 No appointments found.
                               </td>
                             </tr>
