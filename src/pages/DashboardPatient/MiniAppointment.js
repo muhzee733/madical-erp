@@ -7,13 +7,11 @@ const MiniAppointment = ({ doctor, appointments, onBookSlot, loading }) => {
 
   // Group appointments by date
   const appointmentsByDate = appointments?.results?.reduce((acc, slot) => {
-    if (slot.doctor === doctor.id && !slot.is_booked) {
-      const date = new Date(slot.start_time).toLocaleDateString();
-      if (!acc[date]) {
-        acc[date] = [];
-      }
-      acc[date].push(slot);
+    const date = new Date(slot.start_time).toLocaleDateString();
+    if (!acc[date]) {
+      acc[date] = [];
     }
+    acc[date].push(slot);
     return acc;
   }, {}) || {};
 
@@ -32,7 +30,12 @@ const MiniAppointment = ({ doctor, appointments, onBookSlot, loading }) => {
             <Spinner color="primary" />
             <span className="ms-2">Loading appointments...</span>
           </div>
-        ) : dates.length > 0 ? (
+        ) : dates.length === 0 ? (
+          <div className="text-center text-muted">
+            <i className="ri-calendar-line display-4 mb-3"></i>
+            <p>No available time slots for this doctor</p>
+          </div>
+        ) : (
           <>
             <Nav tabs className="nav-tabs-custom">
               {dates.map((date, index) => (
@@ -71,10 +74,6 @@ const MiniAppointment = ({ doctor, appointments, onBookSlot, loading }) => {
               ))}
             </TabContent>
           </>
-        ) : (
-          <div className="text-center text-muted">
-            No available appointments
-          </div>
         )}
       </CardBody>
     </Card>

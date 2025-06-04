@@ -47,17 +47,19 @@ export const getMyAppointments = createAsyncThunk(
 );
 
 export const rescheduleAppointment = createAsyncThunk(
-  "patientAppointments/reschedule",
+  'patientAppointment/reschedule',
   async ({ appointmentId, newAvailabilityId }, { rejectWithValue }) => {
     try {
       const token = Cookies.get('authUser');
       if (!token) {
-        return rejectWithValue("No authentication token found");
+        throw new Error('No authentication token found');
       }
 
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/appointments/${appointmentId}/reschedule/`,
-        { new_availability_id: newAvailabilityId },
+        {
+          new_availability_id: newAvailabilityId
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -67,7 +69,7 @@ export const rescheduleAppointment = createAsyncThunk(
 
       return response;
     } catch (error) {
-      return rejectWithValue(error.response || error.message);
+      return rejectWithValue(error.response?.data || 'Failed to reschedule appointment');
     }
   }
 );

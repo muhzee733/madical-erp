@@ -1,21 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardBody, CardHeader, Spinner, Alert, Badge, Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { getMyAppointments, rescheduleAppointment, cancelAppointment } from '../../slices/PatientAppointment/thunk';
 
-const MyAppointments = () => {
+const MyAppointments = React.memo(({ 
+  appointments, 
+  loading, 
+  error, 
+  onReschedule, 
+  onCancel 
+}) => {
   const dispatch = useDispatch();
-  const { myAppointments, myAppointmentsLoading, myAppointmentsError } = useSelector(
-    (state) => state.patientAppointment
-  );
   const [cancelModal, setCancelModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
 
-  useEffect(() => {
-    dispatch(getMyAppointments());
-  }, [dispatch]);
-
-  const getStatusBadge = (status) => {
+  const getStatusBadge = useCallback((status) => {
     switch (status) {
       case 'booked':
         return <Badge color="success">Booked</Badge>;
@@ -28,22 +27,17 @@ const MyAppointments = () => {
       default:
         return <Badge color="info">{status}</Badge>;
     }
-  };
+  }, []);
 
-  const handleReschedule = (appointmentId) => {
-    // TODO: Implement reschedule logic with new availability selection
-    console.log('Reschedule appointment:', appointmentId);
-  };
-
-  const handleCancelClick = (appointment) => {
+  const handleCancelClick = useCallback((appointment) => {
     setSelectedAppointment(appointment);
     setCancelModal(true);
-  };
+  }, []);
 
-  const handleCancelConfirm = async () => {
+  const handleCancelConfirm = useCallback(async () => {
     if (selectedAppointment) {
       try {
-        await dispatch(cancelAppointment(selectedAppointment.id)).unwrap();
+        await onCancel(selectedAppointment.id);
         setCancelModal(false);
         setSelectedAppointment(null);
         // Refresh appointments list
@@ -52,25 +46,7 @@ const MyAppointments = () => {
         console.error('Failed to cancel appointment:', error);
       }
     }
-  };
-
-  if (myAppointmentsLoading) {
-    return (
-      <div className="text-center p-5">
-        <Spinner color="primary" />
-        <span className="ms-2">Loading appointments...</span>
-      </div>
-    );
-  }
-
-  if (myAppointmentsError) {
-    return (
-      <Alert color="danger">
-        <i className="ri-error-warning-line me-2"></i>
-        {myAppointmentsError}
-      </Alert>
-    );
-  }
+  }, [selectedAppointment, onCancel, dispatch]);
 
   return (
     <div className="my-appointments">
@@ -79,25 +55,44 @@ const MyAppointments = () => {
           <h4 className="card-title mb-0">My Appointments</h4>
         </CardHeader>
         <CardBody>
-          {!myAppointments?.results || myAppointments.results.length === 0 ? (
-            <div className="text-center text-muted">
-              <i className="ri-calendar-line display-4 mb-3"></i>
-              <p>No appointments found</p>
-            </div>
-          ) : (
-            <div className="table-responsive">
-              <table className="table table-hover mb-0">
-                <thead>
+          <div className="table-responsive">
+            <table className="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Patient</th>
+                  <th>Appointment Time</th>
+                  <th>Booked At</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
                   <tr>
-                    <th>#</th>
-                    <th>Patient</th>
-                    <th>Booked At</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <td colSpan="6" className="text-center py-4">
+                      <Spinner color="primary" size="sm" className="me-2" />
+                      <span>Loading appointments...</span>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {myAppointments.results.map((appointment, index) => (
+                ) : error ? (
+                  <tr>
+                    <td colSpan="6">
+                      <Alert color="danger" className="mb-0">
+                        <i className="ri-error-warning-line me-2"></i>
+                        {error}
+                      </Alert>
+                    </td>
+                  </tr>
+                ) : !appointments?.results || appointments.results.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="text-center py-4">
+                      <i className="ri-calendar-line display-4 mb-3 text-muted"></i>
+                      <p className="text-muted mb-0">No appointments found</p>
+                    </td>
+                  </tr>
+                ) : (
+                  appointments.results.map((appointment, index) => (
                     <tr key={appointment.id}>
                       <td>{index + 1}</td>
                       <td>
@@ -107,14 +102,53 @@ const MyAppointments = () => {
                         <small className="text-muted">{appointment.patient.email}</small>
                       </td>
                       <td>
-                        {new Date(appointment.booked_at).toLocaleString(undefined, {
-                          weekday: 'short',
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+  {(() => {
+    const startDate = new Date(appointment.availability.start_time);
+    const endDate = new Date(appointment.availability.end_time);
+
+    const optionsFull = {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'Australia/Brisbane'
+    };
+
+    const optionsTimeOnly = {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'Australia/Brisbane'
+    };
+
+    return (
+      <>
+        {startDate.toLocaleString('en-US', optionsFull)}
+        <br />
+        <small className="text-muted">
+          to {endDate.toLocaleString('en-US', optionsTimeOnly)}
+        </small>
+      </>
+    );
+  })()}
+</td>
+
+                      <td>
+                        {(() => {
+                          const bookedDate = new Date(appointment.booked_at);
+                          return bookedDate.toLocaleString('en-US', {
+                            weekday: 'short',
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                          });
+                        })()}
                       </td>
                       <td>
                         {getStatusBadge(appointment.status)}
@@ -126,7 +160,7 @@ const MyAppointments = () => {
                               <Button
                                 color="warning"
                                 size="sm"
-                                onClick={() => handleReschedule(appointment.id)}
+                                onClick={() => onReschedule(appointment.id)}
                               >
                                 <i className="ri-calendar-event-line me-1"></i>
                                 Reschedule
@@ -150,11 +184,11 @@ const MyAppointments = () => {
                         </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </CardBody>
       </Card>
 
@@ -181,6 +215,8 @@ const MyAppointments = () => {
       </Modal>
     </div>
   );
-};
+});
+
+MyAppointments.displayName = 'MyAppointments';
 
 export default MyAppointments; 

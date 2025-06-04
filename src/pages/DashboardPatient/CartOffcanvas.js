@@ -3,7 +3,7 @@ import { Offcanvas, OffcanvasHeader, OffcanvasBody, Button, ListGroup, ListGroup
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const CartOffcanvas = ({ isOpen, toggle, cartItems, onRemoveItem, onCheckout }) => {
+const CartOffcanvas = ({ isOpen, toggle, cartItems, onRemoveItem, onCheckout, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -12,6 +12,7 @@ const CartOffcanvas = ({ isOpen, toggle, cartItems, onRemoveItem, onCheckout }) 
     try {
       setLoading(true);
       setError(null);
+      setSuccess(false);
       
       const token = Cookies.get('authUser');
       if (!token) {
@@ -21,7 +22,7 @@ const CartOffcanvas = ({ isOpen, toggle, cartItems, onRemoveItem, onCheckout }) 
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/appointments/`,
         {
-          availability: cartItems[0].id
+          availability_id: cartItems[0].id
         },
         {
           headers: {
@@ -32,7 +33,16 @@ const CartOffcanvas = ({ isOpen, toggle, cartItems, onRemoveItem, onCheckout }) 
 
       if (response) {
         setSuccess(true);
-        onCheckout(); // Clear cart and close offcanvas
+        // Clear cart and close offcanvas
+        onCheckout();
+        // Trigger data refresh in parent component
+        onSuccess();
+        // Reset local state and close offcanvas after showing success message
+        setTimeout(() => {
+          setSuccess(false);
+          setError(null);
+          toggle(); // Close the offcanvas
+        }, 2000);
       }
     } catch (error) {
       // Handle specific error for already booked appointment
@@ -70,7 +80,7 @@ const CartOffcanvas = ({ isOpen, toggle, cartItems, onRemoveItem, onCheckout }) 
                       <div className="d-flex justify-content-between align-items-start mb-3">
                         <div>
                           <h6 className="mb-1">
-                            <span className="text-muted">Doctor:</span> Dr. {item.doctor}
+                            <span className="text-muted">Doctor:</span> Dr. {item.doctor.first_name} {item.doctor.last_name}
                           </h6>
                           <Badge color="info" className="mb-2">
                             <span className="text-muted me-1">Type:</span> {item.slot_type}

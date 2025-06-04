@@ -59,9 +59,10 @@ const Appointment = () => {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(
+        const response = await axios.delete(
           `${process.env.REACT_APP_API_URL}/appointments/availabilities/${id}/delete/`
         );
+        console.log(response, 'response delete')
         dispatch(getAppointments());
         Swal.fire(
           "Deleted!",
