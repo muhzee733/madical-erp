@@ -59,6 +59,14 @@ const DashboardPatient = () => {
       apiCache.appointments = appointmentsResponse;
       apiCache.myAppointments = myAppointmentsResponse;
       apiCache.lastFetched = now;
+
+      // Set price information from API response
+      if (appointmentsResponse?.price_info) {
+        setPriceInfo({
+          initial: appointmentsResponse.price_info.initial_price || 0,
+          followup: appointmentsResponse.price_info.followup_price || 0
+        });
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
