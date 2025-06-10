@@ -9,6 +9,7 @@ import {
 import {
   addToCart,
   removeFromCart,
+  clearCart,
 } from "../../slices/PatientAppointment/cartSlice";
 import MiniAppointment from "./MiniAppointment";
 import CartOffcanvas from "./CartOffcanvas";
@@ -78,40 +79,6 @@ const DashboardPatient = () => {
     fetchAllData();
   }, [fetchAllData]);
 
-  const handleBookSlot = useCallback((slot) => {
-    // Format the slot data to only include necessary information
-    const formattedSlot = {
-      id: slot.id,
-      start_time: slot.start_time,
-      end_time: slot.end_time,
-      doctor: {
-        id: slot.doctor.id,
-        first_name: slot.doctor.first_name,
-        last_name: slot.doctor.last_name
-      }
-    };
-    dispatch(addToCart(formattedSlot));
-    setIsCartOpen(true);
-  }, [dispatch]);
-
-  const handleRemoveFromCart = useCallback((slotId) => {
-    dispatch(removeFromCart(slotId));
-  }, [dispatch]);
-
-  const handleCheckout = useCallback(() => {
-    // TODO: Implement checkout logic
-    console.log("Checkout with items:", cartItems);
-  }, [cartItems]);
-
-  const handleReschedule = useCallback((appointmentId) => {
-    setSelectedAppointmentId(appointmentId);
-    setIsRescheduleOpen(true);
-  }, []);
-
-  const handleRescheduleSuccess = useCallback(() => {
-    fetchAllData();
-  }, [fetchAllData]);
-
   const handleCancelAppointment = useCallback(async (appointmentId) => {
     try {
       await dispatch(cancelAppointment(appointmentId)).unwrap();
@@ -143,6 +110,42 @@ const DashboardPatient = () => {
     apiCache.appointments = null;
     apiCache.myAppointments = null;
     apiCache.lastFetched = null;
+    fetchAllData();
+  }, [fetchAllData]);
+
+  const handleBookSlot = useCallback((slot) => {
+    // Format the slot data to only include necessary information
+    const formattedSlot = {
+      id: slot.id,
+      start_time: slot.start_time,
+      end_time: slot.end_time,
+      doctor: {
+        id: slot.doctor.id,
+        first_name: slot.doctor.first_name,
+        last_name: slot.doctor.last_name
+      }
+    };
+    dispatch(addToCart(formattedSlot));
+    setIsCartOpen(true);
+  }, [dispatch]);
+
+  const handleRemoveFromCart = useCallback((slotId) => {
+    dispatch(removeFromCart(slotId));
+  }, [dispatch]);
+
+  const handleCheckout = useCallback(() => {
+    // Clear the cart after successful booking
+    dispatch(clearCart());
+    // Refresh the data to show updated appointments
+    refreshData();
+  }, [dispatch, refreshData]);
+
+  const handleReschedule = useCallback((appointmentId) => {
+    setSelectedAppointmentId(appointmentId);
+    setIsRescheduleOpen(true);
+  }, []);
+
+  const handleRescheduleSuccess = useCallback(() => {
     fetchAllData();
   }, [fetchAllData]);
 

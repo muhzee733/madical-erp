@@ -117,6 +117,22 @@ const AppointmentDetails = () => {
                     <Button color="success" className="me-2" onClick={() => navigate(`/chat/${selectedAppointment.id}`)}>
                       Go for Chat
                     </Button>
+                    <Button 
+                      color="info" 
+                      className="me-2"
+                      onClick={() => navigate('/dashboard/doctor/prescription', { 
+                        state: { 
+                          patient: {
+                            id: selectedAppointment.patient.id,
+                            name: `${selectedAppointment.patient.first_name} ${selectedAppointment.patient.last_name}`,
+                            email: selectedAppointment.patient.email,
+                            phone: selectedAppointment.patient.phone_number
+                          }
+                        }
+                      })}
+                    >
+                      Prescription
+                    </Button>
                     <Button color="primary" onClick={() => navigate(-1)}>
                       Back to List
                     </Button>

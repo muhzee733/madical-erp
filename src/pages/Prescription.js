@@ -21,6 +21,7 @@ import {
 } from "reactstrap";
 import debounce from "lodash/debounce";
 import { resetPrescriptionState, clearSuccess } from "../slices/prescriptions/slice";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const PrescriptionForm = () => {
   const dispatch = useDispatch();
@@ -36,6 +37,8 @@ const PrescriptionForm = () => {
     error,
     downloadingIds,
   } = useSelector((state) => state.prescriptions);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,6 +73,13 @@ const PrescriptionForm = () => {
   useEffect(() => {
     dispatch(getPrescription());
   }, [dispatch]);
+
+  useEffect(() => {
+    // Check if we have patient data from navigation state
+    if (location.state?.patient) {
+      setSelectedPatient(location.state.patient);
+    }
+  }, [location.state]);
 
   const [formData, setFormData] = useState({
     patient: "",
@@ -134,7 +144,7 @@ const PrescriptionForm = () => {
 
     const payload = {
       notes: formData.notes,
-      patient: 2,
+      patient: selectedPatient.id,
       prescribed_drugs: selectedDrugs.map((drug) => ({
         drug: drug.id,
         dosage: drug.dosage,
@@ -308,23 +318,18 @@ const PrescriptionForm = () => {
         <div className="row">
           <div className="col-12">
             <div className="card">
-              <div className="card-header">
-                <h4 className="card-title mb-0">Create New Prescription</h4>
+              <div className="card-header d-flex justify-content-between align-items-center">
+                <h4 className="card-title mb-0">Create Prescription</h4>
+                <Button color="primary" onClick={() => navigate(-1)}>
+                  Back
+                </Button>
               </div>
               <div className="card-body">
                 <form onSubmit={handleSubmit}>
                   {/* Patient Card */}
                   <div className="card">
-                    <div className="card-header d-flex justify-content-between align-items-center">
-                      <h5 className="card-title mb-0">Patient</h5>
-                      <button
-                        type="button"
-                        className="btn btn-primary d-flex align-items-center"
-                        onClick={togglePatientModal}
-                      >
-                        <i className="ri-add-line me-1"></i>
-                        Add Patient
-                      </button>
+                    <div className="card-header">
+                      <h5 className="card-title mb-0">Patient Information</h5>
                     </div>
                     <div className="card-body">
                       {selectedPatient ? (
@@ -332,22 +337,14 @@ const PrescriptionForm = () => {
                           <div className="flex-grow-1">
                             <h5 className="mb-1">{selectedPatient.name}</h5>
                             <p className="text-muted mb-0">
-                              ID: {selectedPatient.id}
                               {selectedPatient.email && ` • ${selectedPatient.email}`}
                               {selectedPatient.phone && ` • ${selectedPatient.phone}`}
                             </p>
                           </div>
-                          <button
-                            type="button"
-                            className="btn btn-danger btn-sm"
-                            onClick={() => setSelectedPatient(null)}
-                          >
-                            <i className="ri-delete-bin-line"></i>
-                          </button>
                         </div>
                       ) : (
                         <div className="text-center text-muted">
-                          No patient selected. Click "Add Patient" to select a patient.
+                          No patient information available
                         </div>
                       )}
                     </div>
