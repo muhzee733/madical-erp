@@ -4,6 +4,7 @@ import Cookies from "js-cookie";
 import DashboardPatient from "../pages/DashboardPatient";
 import Questions from "../pages/AdminDashboard/AddQuestions";
 import Prescription from "../pages/Prescription";
+import CreateProfile from "../pages/DashboardPatient/CreateProfile";
 
 //login
 import Login from "../pages/Authentication/Login";
@@ -27,6 +28,7 @@ import Success from "../pages/Success";
 
 const authProtectedRoutes = [
   { path: "/dashboard/patient", component: <DashboardPatient /> },
+  { path: "/dashboard/patient/create-profile", component: <CreateProfile /> },
   { path: "/index", component: <DashboardPatient /> },
   { path: "/dashboard/admin/questions", component: <Questions /> },
   { path: "/dashboard/doctor/appointment", component: <Appointment /> },

@@ -12,7 +12,8 @@ const ProfileSlice = createSlice({
   reducers: { 
     profileSuccess(state, action) {
       state.success = action.payload.status;
-      state.user = action.payload.data
+      state.user = action.payload
+      console.log(state.user, 'state.user')
     },
     profileError(state, action) {
         state.error = action.payload

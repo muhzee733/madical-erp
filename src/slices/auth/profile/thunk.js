@@ -1,43 +1,125 @@
-//Include Both Helper File with needed methods
-import { getFirebaseBackend } from "../../../helpers/firebase_helper";
-import { postFakeProfile, postJwtProfile } from "../../../helpers/fakebackend_helper";
+import axios from "axios";
+import Cookies from "universal-cookie";
 
 // action
 import { profileSuccess, profileError, resetProfileFlagChange } from "./reducer";
 
-const fireBaseBackend = getFirebaseBackend();
+// Helper function to get auth token
+const getAuthToken = () => {
+    const cookies = new Cookies();
+    return cookies.get('authUser');
+};
+
+// Helper function to get user role
+const getUserRole = () => {
+    const cookies = new Cookies();
+    const userData = cookies.get('user');
+    return userData?.role;
+};
 
 export const editProfile = (user) => async (dispatch) => {
     try {
-        let response;
-
-        if (process.env.REACT_APP_DEFAULTAUTH === "firebase") {
-            response = fireBaseBackend.editProfileAPI(
-                user.username,
-                user.idx
-            );
-
-        } else if (process.env.REACT_APP_DEFAULTAUTH === "jwt") {
-
-            response = postJwtProfile(
-                {
-                    username: user.username,
-                    idx: user.idx,
+        const token = getAuthToken();
+        const role = getUserRole();
+        const endpoint = role === 'doctor' 
+            ? '/users/profile/doctor/'
+            : '/users/profile/patient/';
+            
+        const response = await axios.patch(
+            `${process.env.REACT_APP_API_URL}${endpoint}`,
+            user,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
                 }
-            );
+            }
+        );
 
-        } else if (process.env.REACT_APP_DEFAULTAUTH === "fake") {
-            response = postFakeProfile(user);
+        if (response) {
+            dispatch(profileSuccess(response));
         }
-
-        const data = await response;
-
-        if (data) {
-            dispatch(profileSuccess(data));
-        }
-
     } catch (error) {
-        dispatch(profileError(error));
+        dispatch(profileError(error.response?.message || "Failed to update profile"));
+    }
+};
+
+export const getPatientProfile = () => async (dispatch) => {
+    try {
+        const token = getAuthToken();
+        const response = await axios.get(
+            `${process.env.REACT_APP_API_URL}/users/profile/patient/`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+        if (response) {
+            dispatch(profileSuccess(response));
+        }
+    } catch (error) {
+        dispatch(profileError(error.response?.message || "Failed to fetch profile"));
+    }
+};
+
+export const getDoctorProfile = () => async (dispatch) => {
+    try {
+        const token = getAuthToken();
+        const response = await axios.get(
+            `${process.env.REACT_APP_API_URL}/users/profile/doctor/`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+        if (response) {
+            dispatch(profileSuccess(response));
+        }
+    } catch (error) {
+        dispatch(profileError(error.response?.message || "Failed to fetch doctor profile"));
+    }
+};
+
+export const createPatientProfile = (profileData) => async (dispatch) => {
+    try {
+        const token = getAuthToken();
+        const response = await axios.post(
+            `${process.env.REACT_APP_API_URL}/users/profile/patient/create/`,
+            profileData,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        if (response) {
+            dispatch(profileSuccess(response));
+        }
+    } catch (error) {
+        dispatch(profileError(error.response?.message || "Failed to create profile"));
+    }
+};
+
+export const createDoctorProfile = (profileData) => async (dispatch) => {
+    try {
+        const token = getAuthToken();
+        const response = await axios.post(
+            `${process.env.REACT_APP_API_URL}/users/profile/doctor/create/`,
+            profileData,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        if (response) {
+            dispatch(profileSuccess(response));
+        }
+    } catch (error) {
+        dispatch(profileError(error.response?.message || "Failed to create doctor profile"));
     }
 };
 

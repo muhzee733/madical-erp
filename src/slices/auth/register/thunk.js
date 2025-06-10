@@ -9,24 +9,46 @@ import {
   apiErrorChange,
 } from "./reducer";
 
-// Is user register successfull then direct plot user in redux.
 export const registerUser = (user, navigator) => async (dispatch) => {
   try {
     const response = await axios.post(
       `${process.env.REACT_APP_API_URL}/users/register/`,
       user
     );
-    console.log(response, 'response')
-    if (response.success === true) {
-      dispatch(registerUserSuccessful(response.message));
+
+    console.log("Registration response:", response.data);
+
+    if (response.data.success === true) {
+      dispatch(registerUserSuccessful(response.data.message));
     }
   } catch (error) {
-    if (error.response?.status === 400) {
-      const errorMsg = error.response.data.errors.email[0];
-      dispatch(registerUserFailed(errorMsg));
-    } else {
-      dispatch(registerUserFailed("Registration failed"));
+    let errorMessage = "Registration failed";
+
+    console.log("Registration error:", error); // raw error
+    if (error.response && error.response.data) {
+      const data = error.response.data;
+
+      console.log("Error response data:", data); // show the actual backend error object
+
+      // Case 1: field-specific errors
+      if (data.errors && typeof data.errors === 'object') {
+        const messages = Object.values(data.errors).flat().join(" ");
+        errorMessage = messages || errorMessage;
+      }
+
+      // Case 2: generic message
+      else if (data.message) {
+        errorMessage = data.message;
+      }
+
+      // Case 3: fallback to JSON string
+      else {
+        errorMessage = JSON.stringify(data);
+      }
     }
+
+    console.log("Final error message:", errorMessage);
+    dispatch(registerUserFailed(errorMessage));
   }
 };
 

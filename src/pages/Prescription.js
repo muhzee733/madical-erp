@@ -694,13 +694,13 @@ const PrescriptionForm = () => {
                           searchResults?.results.map((pres, index) => (
                             <tr key={pres.id}>
                               <td>{index + 1}</td>
-                              <td>{pres.patient}</td>
+                              <td>{pres.patient_name}</td>
                               <td>{pres.doctor_name}</td>
                               <td>{pres.notes}</td>
                               <td>
                                 {pres.prescribed_drugs.map((d, idx) => (
                                   <div key={idx} className="mb-1">
-                                    <strong>{d.drug}</strong>
+                                    <strong>{d.drug_name}</strong>
                                     <br />
                                     Dosage: {d.dosage}
                                     <br />
