@@ -25,9 +25,14 @@ export const editProfile = (user) => async (dispatch) => {
             ? '/users/profile/doctor/'
             : '/users/profile/patient/';
             
+        // Remove any undefined or null values
+        const cleanUserData = Object.fromEntries(
+            Object.entries(user).filter(([_, value]) => value !== undefined && value !== null)
+        );
+
         const response = await axios.patch(
             `${process.env.REACT_APP_API_URL}${endpoint}`,
-            user,
+            cleanUserData,
             {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -35,11 +40,15 @@ export const editProfile = (user) => async (dispatch) => {
             }
         );
 
-        if (response) {
-            dispatch(profileSuccess(response));
+        if (response.data) {
+            dispatch(profileSuccess(response.data));
+            return response.data;
         }
     } catch (error) {
-        dispatch(profileError(error.response?.message || "Failed to update profile"));
+        console.error('Profile update error:', error);
+        const errorMessage = error.response?.data?.message || error.response?.data?.detail || error.message || "Failed to update profile";
+        dispatch(profileError(errorMessage));
+        throw error;
     }
 };
 
@@ -77,7 +86,8 @@ export const getDoctorProfile = () => async (dispatch) => {
             dispatch(profileSuccess(response));
         }
     } catch (error) {
-        dispatch(profileError(error.response?.message || "Failed to fetch doctor profile"));
+        console.log(error, 'error')
+        dispatch(profileError(error || "Failed to fetch doctor profile"));
     }
 };
 
@@ -93,6 +103,7 @@ export const createPatientProfile = (profileData) => async (dispatch) => {
                 }
             }
         );
+        
 
         if (response) {
             dispatch(profileSuccess(response));
@@ -119,7 +130,7 @@ export const createDoctorProfile = (profileData) => async (dispatch) => {
             dispatch(profileSuccess(response));
         }
     } catch (error) {
-        dispatch(profileError(error.response?.message || "Failed to create doctor profile"));
+        dispatch(profileError(error));
     }
 };
 

@@ -28,7 +28,7 @@ import Success from "../pages/Success";
 
 const authProtectedRoutes = [
   { path: "/dashboard/patient", component: <DashboardPatient /> },
-  { path: "/dashboard/patient/create-profile", component: <CreateProfile /> },
+  { path: "/dashboard/create-profile", component: <CreateProfile /> },
   { path: "/index", component: <DashboardPatient /> },
   { path: "/dashboard/admin/questions", component: <Questions /> },
   { path: "/dashboard/doctor/appointment", component: <Appointment /> },
