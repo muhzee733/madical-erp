@@ -132,10 +132,7 @@ const DashboardPatient = () => {
         appointments: []
       };
     }
-    // Only add if not booked
-    if (!slot.is_booked) {
-      acc[doctorId].appointments.push(slot);
-    }
+    acc[doctorId].appointments.push(slot);
     return acc;
   }, {}) || {};
 

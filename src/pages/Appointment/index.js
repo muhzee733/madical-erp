@@ -9,7 +9,7 @@ import {
   Alert,
   Table,
 } from "reactstrap";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 import BreadCrumb from "../../Components/Common/BreadCrumb";
 import DoctorAuthWrapper from "../../Routes/DoctorAuthWrapper";
 import { useSelector, useDispatch } from "react-redux";
@@ -62,7 +62,7 @@ const Appointment = () => {
         const response = await axios.delete(
           `${process.env.REACT_APP_API_URL}/appointments/availabilities/${id}/delete/`
         );
-        console.log(response, 'response delete')
+        console.log(response, "response delete");
         dispatch(getAppointments());
         Swal.fire(
           "Deleted!",
@@ -78,7 +78,6 @@ const Appointment = () => {
       }
     }
   };
-
 
   useEffect(() => {
     dispatch(getDoctorSchedules());
@@ -174,32 +173,32 @@ const Appointment = () => {
       return;
     }
 
-    const isBulk = selectedSlots.length > 1;
-
-    const slotsPayload = selectedSlots.map((slot) => ({
-      start_time: `${selectedDate}T${slot.time}`,
-      end_time: `${selectedDate}T${getEndTime(slot.time)}`,
+    // Format the payload according to the required structure
+    const payload = {
+      date: selectedDate,
+      start_times: selectedSlots.map((slot) => slot.time),
       slot_type: "short",
-      timezone: "Australia/Brisbane",
-    }));
-
-    const endpoint = isBulk
-      ? `${process.env.REACT_APP_API_URL}/appointments/availabilities/bulk/`
-      : `${process.env.REACT_APP_API_URL}/appointments/availabilities/`;
-
-    const finalPayload = isBulk ? { slots: slotsPayload } : slotsPayload[0];
+    };
 
     try {
-      await axios.post(endpoint, finalPayload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setSuccessMessage("Schedule created successfully!");
-      setSelectedSlots([]);
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/appointments/availabilities/custom/`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response) {
+        setSuccessMessage(response?.message);
+        setSelectedSlots([]);
+        dispatch(getDoctorSchedules());
+      }
     } catch (error) {
-      setErrorMessages(["Something went wrong while submitting."]);
+      setErrorMessages([
+        error.response?.message || "Something went wrong while submitting.",
+      ]);
       console.error("Error creating schedule:", error);
     } finally {
       setIsSubmitting(false);
@@ -326,7 +325,9 @@ const Appointment = () => {
                                 <td>
                                   {new Date(slot.end_time).toLocaleString()}
                                 </td>
-                                <td className="text-capitalize">{slot.slot_type}</td>
+                                <td className="text-capitalize">
+                                  {slot.slot_type}
+                                </td>
                                 <td>
                                   {slot.is_booked ? (
                                     <span className="badge bg-danger">

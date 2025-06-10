@@ -5,6 +5,8 @@ import { useState } from "react";
 const MiniAppointment = ({ doctor, appointments, onBookSlot, loading }) => {
   const [activeTab, setActiveTab] = useState("1");
 
+  console.log('MiniAppointment received props:', { doctor, appointments });
+
   // Group appointments by date
   const appointmentsByDate = appointments?.results?.reduce((acc, slot) => {
     const date = new Date(slot.start_time).toLocaleDateString();
@@ -14,6 +16,7 @@ const MiniAppointment = ({ doctor, appointments, onBookSlot, loading }) => {
     acc[date].push(slot);
     return acc;
   }, {}) || {};
+
 
   const dates = Object.keys(appointmentsByDate).sort((a, b) => new Date(a) - new Date(b));
 
@@ -34,6 +37,7 @@ const MiniAppointment = ({ doctor, appointments, onBookSlot, loading }) => {
           <div className="text-center text-muted">
             <i className="ri-calendar-line display-4 mb-3"></i>
             <p>No available time slots for this doctor</p>
+            <p className="small">Debug info: {JSON.stringify({ appointmentsCount: appointments?.results?.length, datesCount: dates.length })}</p>
           </div>
         ) : (
           <>
