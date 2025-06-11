@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from "react";
-import { Col, Container, Row, Card, CardBody } from "reactstrap";
+import { Col, Container, Row, Card, CardBody, Spinner } from "reactstrap";
 import BreadCrumb from "../../Components/Common/BreadCrumb";
 import DoctorAuthWrapper from "../../Routes/DoctorAuthWrapper";
 import AppointmentTable from "../../Components/Common/AppointmentTable";
@@ -23,6 +23,21 @@ const DoctorDashboard = () => {
   useEffect(() => {
     fetchAppointments();
   }, [fetchAppointments]);
+
+  if (loading) {
+    return (
+      <div className="page-content">
+        <Container fluid>
+          <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "80vh" }}>
+            <div className="text-center">
+              <Spinner color="primary" className="mb-3" style={{ width: "3rem", height: "3rem" }} />
+              <h4>Loading Dashboard...</h4>
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
 
   return (
     <React.Fragment>

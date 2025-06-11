@@ -3,18 +3,28 @@ import { Navigate } from "react-router-dom";
 import Cookies from "universal-cookie";
 import axios from "axios";
 
-const PatientAuthWrapper = ({ children }) => {
+const DoctorAuthWrapper = ({ children }) => {
   const [authorized, setAuthorized] = useState(null);
   const cookies = new Cookies();
 
   useEffect(() => {
     const token = cookies.get("authUser");
+    const user = cookies.get("user");
 
-    if (!token) {
+    if (!token || !user) {
       setAuthorized(false);
       return;
     }
 
+    // First check the user role from cookies
+    if (user.role !== "doctor") {
+      setAuthorized(false);
+      cookies.remove("authUser");
+      cookies.remove("user");
+      return;
+    }
+
+    // Then verify with the backend
     axios
       .get(`${process.env.REACT_APP_API_URL}/users/dashboard/doctor/`, {
         headers: {
@@ -22,8 +32,7 @@ const PatientAuthWrapper = ({ children }) => {
         },
       })
       .then((res) => {
-        console.log(res, 'res')
-        if (res?.user?.role === "doctor") {
+        if (res.data?.success) {
           setAuthorized(true);
         } else {
           setAuthorized(false);
@@ -39,9 +48,10 @@ const PatientAuthWrapper = ({ children }) => {
   }, []);
 
   if (authorized === null) return null;
-  if (!authorized) return <Navigate to="/unauthorized" replace />;
+  // if (!authorized) return <Navigate to="/unauthorized" replace />;
 
   return children;
 };
 
-export default PatientAuthWrapper;
+export default DoctorAuthWrapper;
+

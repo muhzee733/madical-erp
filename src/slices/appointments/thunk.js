@@ -17,8 +17,7 @@ export const getAppointments = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         }
       });
-
-      return response;
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response || error.message);
     }
@@ -40,7 +39,7 @@ export const getAppointmentById = createAsyncThunk(
         }
       });
 
-      return response;
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response || error.message);
     }
@@ -61,7 +60,7 @@ export const getDoctorSchedules = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         }
       });
-      return response;
+      return response.data;
     
     } catch (error) {
       return rejectWithValue(error.response || error.message);

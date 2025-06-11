@@ -10,7 +10,7 @@ export const createPrescription = createAsyncThunk(
         `${process.env.REACT_APP_API_URL}/prescriptions/`,
         prescriptionData
       );
-      return response;
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response || "Failed to create prescription");
     }
@@ -24,7 +24,7 @@ export const getPrescription = createAsyncThunk(
       const response = await axios.get(
         `${process.env.REACT_APP_API_URL}/prescriptions/list/`
       );
-      return response;
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response || error.message);
     }
@@ -38,7 +38,7 @@ export const searchPrescriptions = createAsyncThunk(
       const response = await axios.get(
         `${process.env.REACT_APP_API_URL}/prescriptions/list/?search=${searchTerm}`
       );
-      return response;
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response || error.message);
     }
@@ -52,7 +52,7 @@ export const searchDrugs = createAsyncThunk(
       const response = await axios.get(
         `${process.env.REACT_APP_API_URL}/drugs/?search=${searchTerm}`
       );
-      return response;
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response || error.message);
     }
@@ -66,7 +66,7 @@ export const searchSupplierProducts = createAsyncThunk(
       const response = await axios.get(
         `${process.env.REACT_APP_API_URL}/supplier-products/?search=${searchTerm}`
       );
-      return response;
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response || error.message);
     }
@@ -95,7 +95,7 @@ export const searchPatients = createAsyncThunk(
       const response = await axios.get(
         `${process.env.REACT_APP_API_URL}/prescription/patient/?search=${searchTerm}`
       );
-      return response;
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response || error.message);
     }

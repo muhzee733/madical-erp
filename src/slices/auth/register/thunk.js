@@ -16,38 +16,24 @@ export const registerUser = (user, navigator) => async (dispatch) => {
       user
     );
 
-    console.log("Registration response:", response.data);
-
-    if (response.data.success === true) {
-      dispatch(registerUserSuccessful(response.data.message));
+    if (response.success === true) {
+      dispatch(registerUserSuccessful(response.message));
     }
   } catch (error) {
     let errorMessage = "Registration failed";
-
-    console.log("Registration error:", error); // raw error
-    if (error.response && error.response.data) {
-      const data = error.response.data;
-
-      console.log("Error response data:", data); // show the actual backend error object
-
-      // Case 1: field-specific errors
-      if (data.errors && typeof data.errors === 'object') {
-        const messages = Object.values(data.errors).flat().join(" ");
-        errorMessage = messages || errorMessage;
-      }
-
-      // Case 2: generic message
-      else if (data.message) {
-        errorMessage = data.message;
-      }
-
-      // Case 3: fallback to JSON string
-      else {
-        errorMessage = JSON.stringify(data);
+    if (error.response?.data?.errors) {
+      // Convert the errors object into a string message
+      const errors = error.response.data.errors;
+      if (errors.email) {
+        errorMessage = Array.isArray(errors.email) ? errors.email[0] : errors.email;
+      } else if (errors.password) {
+        errorMessage = Array.isArray(errors.password) ? errors.password[0] : errors.password;
+      } else {
+        // If there are other errors, take the first one
+        const firstError = Object.values(errors)[0];
+        errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
       }
     }
-
-    console.log("Final error message:", errorMessage);
     dispatch(registerUserFailed(errorMessage));
   }
 };

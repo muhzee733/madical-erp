@@ -17,9 +17,9 @@ export const getPatientAppointments = createAsyncThunk(
         }
       });
 
-      return response;
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error.response || error.message);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -39,9 +39,9 @@ export const getMyAppointments = createAsyncThunk(
         }
       });
 
-      return response;
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error.response || error.message);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -67,7 +67,7 @@ export const rescheduleAppointment = createAsyncThunk(
         }
       );
 
-      return response;
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to reschedule appointment');
     }
@@ -93,9 +93,9 @@ export const cancelAppointment = createAsyncThunk(
         }
       );
 
-      return response;
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error.response || error.message);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 ); 
