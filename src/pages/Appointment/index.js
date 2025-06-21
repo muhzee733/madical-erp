@@ -63,12 +63,14 @@ const Appointment = () => {
           `${process.env.REACT_APP_API_URL}/appointments/availabilities/${id}/delete/`
         );
         console.log(response, "response delete");
-        dispatch(getAppointments());
-        Swal.fire(
-          "Deleted!",
-          "The availability slot has been removed.",
-          "success"
-        );
+        if (response.status === 204) {
+          dispatch(getAppointments());
+          Swal.fire(
+            "Deleted!",
+            "The availability slot has been removed.",
+            "success"
+          );
+        }
       } catch (error) {
         Swal.fire(
           "Error!",
@@ -191,7 +193,7 @@ const Appointment = () => {
         }
       );
       if (response) {
-        setSuccessMessage(response?.message);
+        setSuccessMessage(response?.data.message);
         setSelectedSlots([]);
         dispatch(getDoctorSchedules());
       }
