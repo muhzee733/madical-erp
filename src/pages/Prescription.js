@@ -121,22 +121,6 @@ const PrescriptionForm = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleDrugChange = (index, e) => {
-    const { name, value } = e.target;
-    const updatedDrugs = [...formData.prescribed_drugs];
-    updatedDrugs[index][name] = value;
-    setFormData((prev) => ({ ...prev, prescribed_drugs: updatedDrugs }));
-  };
-
-  const handleProductChange = (index, e) => {
-    const { name, value } = e.target;
-    const updatedProducts = [...formData.prescribed_supplier_products];
-    updatedProducts[index][name] = value;
-    setFormData((prev) => ({
-      ...prev,
-      prescribed_supplier_products: updatedProducts,
-    }));
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -159,34 +143,33 @@ const PrescriptionForm = () => {
       })),
     };
 
-    dispatch(createPrescription(payload))
+    dispatch(createPrescription(payload));
 
-    // setFormData({
-    //   patient: "",
-    //   notes: "",
-    //   prescribed_drugs: [
-    //     {
-    //       drug: "",
-    //       dosage: "",
-    //       instructions: "",
-    //       quantity: "",
-    //       repeats: "",
-    //     },
-    //   ],
-    //   prescribed_supplier_products: [
-    //     {
-    //       product: "",
-    //       dosage: "",
-    //       instructions: "",
-    //       quantity: "",
-    //       repeats: "",
-    //     },
-    //   ],
-    // });
-    // setSelectedDrugs([]);
-    // setSelectedProducts([]);
-    // setSelectedPatient(null);
-    // dispatch(clearSuccess());
+    setFormData({
+      notes: "",
+      prescribed_drugs: [
+        {
+          drug: "",
+          dosage: "",
+          instructions: "",
+          quantity: "",
+          repeats: "",
+        },
+      ],
+      prescribed_supplier_products: [
+        {
+          product: "",
+          dosage: "",
+          instructions: "",
+          quantity: "",
+          repeats: "",
+        },
+      ],
+    });
+    setSelectedDrugs([]);
+    setSelectedProducts([]);
+    setSelectedPatient(null);
+    dispatch(clearSuccess());
   };
 
   const handleSearch = () => {
@@ -309,41 +292,6 @@ const PrescriptionForm = () => {
       dispatch(clearSuccess());
     };
   }, [dispatch]);
-
-  useEffect(() => {
-    if (success) {
-      // Reset all form fields and selections
-      setFormData({
-        patient: "",
-        notes: "",
-        prescribed_drugs: [
-          {
-            drug: "",
-            dosage: "",
-            instructions: "",
-            quantity: "",
-            repeats: "",
-          },
-        ],
-        prescribed_supplier_products: [
-          {
-            product: "",
-            dosage: "",
-            instructions: "",
-            quantity: "",
-            repeats: "",
-          },
-        ],
-      });
-      setSelectedDrugs([]);
-      setSelectedProducts([]);
-      setSelectedPatient(null);
-      // Optionally clear the success message after a short delay
-      setTimeout(() => {
-        dispatch(clearSuccess());
-      }, 2000);
-    }
-  }, [success, dispatch]);
 
   return (
     <div className="page-content">
