@@ -140,8 +140,6 @@ const PrescriptionForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(clearSuccess()); // Clear any existing success message
-
     const payload = {
       notes: formData.notes,
       patient: selectedPatient.id,
@@ -161,34 +159,34 @@ const PrescriptionForm = () => {
       })),
     };
 
-    dispatch(createPrescription(payload)).then(() => {
-      // Reset form after successful submission
-      setFormData({
-        patient: "",
-        notes: "",
-        prescribed_drugs: [
-          {
-            drug: "",
-            dosage: "",
-            instructions: "",
-            quantity: "",
-            repeats: "",
-          },
-        ],
-        prescribed_supplier_products: [
-          {
-            product: "",
-            dosage: "",
-            instructions: "",
-            quantity: "",
-            repeats: "",
-          },
-        ],
-      });
-      setSelectedDrugs([]);
-      setSelectedProducts([]);
-      setSelectedPatient(null);
-    });
+    dispatch(createPrescription(payload))
+
+    // setFormData({
+    //   patient: "",
+    //   notes: "",
+    //   prescribed_drugs: [
+    //     {
+    //       drug: "",
+    //       dosage: "",
+    //       instructions: "",
+    //       quantity: "",
+    //       repeats: "",
+    //     },
+    //   ],
+    //   prescribed_supplier_products: [
+    //     {
+    //       product: "",
+    //       dosage: "",
+    //       instructions: "",
+    //       quantity: "",
+    //       repeats: "",
+    //     },
+    //   ],
+    // });
+    // setSelectedDrugs([]);
+    // setSelectedProducts([]);
+    // setSelectedPatient(null);
+    // dispatch(clearSuccess());
   };
 
   const handleSearch = () => {
@@ -311,6 +309,41 @@ const PrescriptionForm = () => {
       dispatch(clearSuccess());
     };
   }, [dispatch]);
+
+  useEffect(() => {
+    if (success) {
+      // Reset all form fields and selections
+      setFormData({
+        patient: "",
+        notes: "",
+        prescribed_drugs: [
+          {
+            drug: "",
+            dosage: "",
+            instructions: "",
+            quantity: "",
+            repeats: "",
+          },
+        ],
+        prescribed_supplier_products: [
+          {
+            product: "",
+            dosage: "",
+            instructions: "",
+            quantity: "",
+            repeats: "",
+          },
+        ],
+      });
+      setSelectedDrugs([]);
+      setSelectedProducts([]);
+      setSelectedPatient(null);
+      // Optionally clear the success message after a short delay
+      setTimeout(() => {
+        dispatch(clearSuccess());
+      }, 2000);
+    }
+  }, [success, dispatch]);
 
   return (
     <div className="page-content">

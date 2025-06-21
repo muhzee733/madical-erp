@@ -1,14 +1,22 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import Cookies from "universal-cookie";
 
 // POST: Create prescription
 export const createPrescription = createAsyncThunk(
   "prescriptions/create",
   async (prescriptionData, { rejectWithValue }) => {
     try {
+      const cookies = new Cookies();
+      const token = cookies.get("authUser");
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/prescriptions/`,
-        prescriptionData
+        prescriptionData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       return response.data;
     } catch (error) {
