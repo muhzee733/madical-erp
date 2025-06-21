@@ -72,14 +72,16 @@ export const getPatientProfile = () => async (dispatch) => {
         },
       }
     );
-    console.log(response, "response");
     if (response) {
-      dispatch(profileSuccess(response));
+      dispatch(
+        profileSuccess({
+          success: "Profile successfully fetched", 
+          user: response.data                    
+        })
+      );
     }
   } catch (error) {
-    dispatch(
-      profileError(error.response?.message || "Failed to fetch profile")
-    );
+    dispatch(profileError(error));
   }
 };
 
@@ -94,8 +96,13 @@ export const getDoctorProfile = () => async (dispatch) => {
         },
       }
     );
-    if (response) {
-      dispatch(profileSuccess(response?.data));
+    if (response?.status === 200) {
+      dispatch(
+        profileSuccess({
+          status: "Profile updated successfully",
+          user: response.data,
+        })
+      );
     }
   } catch (error) {
     console.log(error, "error");
@@ -117,8 +124,11 @@ export const createPatientProfile = (profileData) => async (dispatch) => {
     );
 
     if (response.status === 201) {
-      dispatch(profileSuccess({
-        status: "Profile Successfully Created"}));
+      dispatch(
+        profileSuccess({
+          status: "Profile Successfully Created",
+        })
+      );
     }
   } catch (error) {
     const errorData = error.response?.data;
