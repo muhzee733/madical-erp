@@ -41,16 +41,20 @@ const UserProfile = () => {
 
   // redux selector
   const selectProfile = (state) => state.Profile;
-  const { user, success: reduxSuccess, error: reduxError } = useSelector(
+  const {
+    user,
+    success: reduxSuccess,
+    error: reduxError,
+  } = useSelector(
     createSelector(selectProfile, (p) => ({
       user: p.user,
       success: p.success,
       error: p.error,
     }))
-  )
+  );
 
   useEffect(() => {
-    const userData = cookies.get('user');
+    const userData = cookies.get("user");
     if (userData) {
       setUserRole(userData.role);
     }
@@ -60,12 +64,10 @@ const UserProfile = () => {
   useEffect(() => {
     if (userRole) {
       setLoading(true);
-      if (userRole === 'patient') {
-        dispatch(getPatientProfile())
-          .finally(() => setLoading(false));
-      } else if (userRole === 'doctor') {
-        dispatch(getDoctorProfile())
-          .finally(() => setLoading(false));
+      if (userRole === "patient") {
+        dispatch(getPatientProfile()).finally(() => setLoading(false));
+      } else if (userRole === "doctor") {
+        dispatch(getDoctorProfile()).finally(() => setLoading(false));
       }
     }
   }, [dispatch, userRole]);
@@ -81,9 +83,17 @@ const UserProfile = () => {
   useEffect(() => {
     if (reduxSuccess || reduxError) {
       const t = setTimeout(() => dispatch(resetProfileFlag()), 3000);
+      setLoading(false);
       return () => clearTimeout(t);
     }
   }, [reduxSuccess, reduxError, dispatch]);
+
+  useEffect(() => {
+    if (reduxError) {
+      setError(reduxError);
+      setLoading(false);
+    }
+  }, [reduxError]);
 
   // Formik setup
   const validation = useFormik({
@@ -100,7 +110,8 @@ const UserProfile = () => {
       // Doctor specific fields
       qualification: profileData?.qualification || "",
       specialty: profileData?.specialty || "",
-      medical_registration_number: profileData?.medical_registration_number || "",
+      medical_registration_number:
+        profileData?.medical_registration_number || "",
       registration_expiry: profileData?.registration_expiry || "",
       prescriber_number: profileData?.prescriber_number || "",
       provider_number: profileData?.provider_number || "",
@@ -113,45 +124,45 @@ const UserProfile = () => {
       gender: Yup.string().required("Gender is required"),
       date_of_birth: Yup.string().required("Date of Birth is required"),
       contact_address: Yup.string().required("Contact Address is required"),
-      medicare_number: Yup.string().when('userRole', {
-        is: 'patient',
+      medicare_number: Yup.string().when("userRole", {
+        is: "patient",
         then: Yup.string().required("Medicare Number is required"),
       }),
-      medicare_expiry: Yup.string().when('userRole', {
-        is: 'patient',
+      medicare_expiry: Yup.string().when("userRole", {
+        is: "patient",
         then: Yup.string().required("Medicare Expiry is required"),
       }),
-      ihi: Yup.string().when('userRole', {
-        is: 'patient',
+      ihi: Yup.string().when("userRole", {
+        is: "patient",
         then: Yup.string().required("IHI Number is required"),
       }),
       // Doctor specific validations
-      qualification: Yup.string().when('userRole', {
-        is: 'doctor',
+      qualification: Yup.string().when("userRole", {
+        is: "doctor",
         then: Yup.string().required("Qualification is required"),
       }),
-      specialty: Yup.string().when('userRole', {
-        is: 'doctor',
+      specialty: Yup.string().when("userRole", {
+        is: "doctor",
         then: Yup.string().required("Specialty is required"),
       }),
-      medical_registration_number: Yup.string().when('userRole', {
-        is: 'doctor',
+      medical_registration_number: Yup.string().when("userRole", {
+        is: "doctor",
         then: Yup.string().required("Medical Registration Number is required"),
       }),
-      registration_expiry: Yup.string().when('userRole', {
-        is: 'doctor',
+      registration_expiry: Yup.string().when("userRole", {
+        is: "doctor",
         then: Yup.string().required("Registration Expiry is required"),
       }),
-      prescriber_number: Yup.string().when('userRole', {
-        is: 'doctor',
+      prescriber_number: Yup.string().when("userRole", {
+        is: "doctor",
         then: Yup.string().required("Prescriber Number is required"),
       }),
-      provider_number: Yup.string().when('userRole', {
-        is: 'doctor',
+      provider_number: Yup.string().when("userRole", {
+        is: "doctor",
         then: Yup.string().required("Provider Number is required"),
       }),
-      hpi_i: Yup.string().when('userRole', {
-        is: 'doctor',
+      hpi_i: Yup.string().when("userRole", {
+        is: "doctor",
         then: Yup.string().required("HPI-I Number is required"),
       }),
     }),
@@ -159,7 +170,7 @@ const UserProfile = () => {
       try {
         setLoading(true);
         setError("");
-        
+
         // Only include fields relevant to the user's role
         const updateData = {
           id: values.id,
@@ -169,13 +180,13 @@ const UserProfile = () => {
           contact_address: values.contact_address,
         };
 
-        if (userRole === 'patient') {
+        if (userRole === "patient") {
           Object.assign(updateData, {
             medicare_number: values.medicare_number,
             medicare_expiry: values.medicare_expiry,
             ihi: values.ihi,
           });
-        } else if (userRole === 'doctor') {
+        } else if (userRole === "doctor") {
           Object.assign(updateData, {
             qualification: values.qualification,
             specialty: values.specialty,
@@ -191,7 +202,7 @@ const UserProfile = () => {
         if (response) {
           setSuccess("Profile updated successfully!");
           // Refresh profile data
-          if (userRole === 'patient') {
+          if (userRole === "patient") {
             dispatch(getPatientProfile());
           } else {
             dispatch(getDoctorProfile());
@@ -206,52 +217,60 @@ const UserProfile = () => {
   });
 
   document.title = "Profile | ProMedicine";
-
+  console.log(error);
   return (
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
+          {loading && (
+            <Row>
+              <Col lg="12">
+                <div className="text-center my-4">
+                  <Spinner color="primary" />
+                  <span className="ms-2">Loading profile information...</span>
+                </div>
+              </Col>
+            </Row>
+          )}
           <Row>
             <Col lg="12">
               {error && (
                 <Alert color="danger">
-                  {error === "Sorry! the data you are looking for could not be found" ? (
-                    <div className="text-center">
-                      <h5 className="mb-3">You need to make profile first</h5>
-                      <Button 
-                        color="primary" 
-                        onClick={() => window.location.href = '/dashboard/create-profile'}
-                      >
-                        Create Profile
-                      </Button>
-                    </div>
-                  ) : (
-                    error
-                  )}
+                  <div className="text-center">
+                    <h5 className="mb-3">You need to make profile first</h5>
+                    <Button
+                      color="primary"
+                      onClick={() =>
+                        (window.location.href = "/dashboard/create-profile")
+                      }
+                    >
+                      Create Profile
+                    </Button>
+                  </div>
                 </Alert>
               )}
-              {success && <Alert color="success">Profile Updated Successfully</Alert>}
+              {success && (
+                <Alert color="success">Profile Updated Successfully</Alert>
+              )}
             </Col>
           </Row>
 
-          {error !== "Sorry! the data you are looking for could not be found" && (
+          {error && (
             <>
               <h4 className="card-title mb-4">
-                {userRole === 'doctor' ? 'Doctor' : 'Patient'} Profile Information
+                {userRole === "doctor" ? "Doctor" : "Patient"} Profile
+                Information
               </h4>
 
               <Card>
                 <CardBody>
-                  {!profileData || loading ? (
-                    <div className="text-center">
-                      <Spinner color="primary" />
-                      <span className="ms-2">Loading profile information...</span>
-                    </div>
-                  ) : (
+                  {!profileData ? null : (
                     <>
                       <Row>
                         <Col md={6}>
-                          <h5 className="font-size-14 mb-3">Personal Information</h5>
+                          <h5 className="font-size-14 mb-3">
+                            Personal Information
+                          </h5>
                           <table className="table">
                             <tbody>
                               <tr>
@@ -262,31 +281,43 @@ const UserProfile = () => {
                                 <th>Date of Birth :</th>
                                 <td>
                                   {profileData.date_of_birth
-                                    ? new Date(profileData.date_of_birth).toLocaleDateString()
+                                    ? new Date(
+                                        profileData.date_of_birth
+                                      ).toLocaleDateString()
                                     : "Not specified"}
                                 </td>
                               </tr>
                               <tr>
                                 <th>Contact Address :</th>
-                                <td>{profileData.contact_address || "Not specified"}</td>
+                                <td>
+                                  {profileData.contact_address ||
+                                    "Not specified"}
+                                </td>
                               </tr>
                             </tbody>
                           </table>
                         </Col>
-                        {userRole === 'patient' ? (
+                        {userRole === "patient" ? (
                           <Col md={6}>
-                            <h5 className="font-size-14 mb-3">Medical Information</h5>
+                            <h5 className="font-size-14 mb-3">
+                              Medical Information
+                            </h5>
                             <table className="table">
                               <tbody>
                                 <tr>
                                   <th>Medicare Number :</th>
-                                  <td>{profileData.medicare_number || "Not specified"}</td>
+                                  <td>
+                                    {profileData.medicare_number ||
+                                      "Not specified"}
+                                  </td>
                                 </tr>
                                 <tr>
                                   <th>Medicare Expiry :</th>
                                   <td>
                                     {profileData.medicare_expiry
-                                      ? new Date(profileData.medicare_expiry).toLocaleDateString()
+                                      ? new Date(
+                                          profileData.medicare_expiry
+                                        ).toLocaleDateString()
                                       : "Not specified"}
                                   </td>
                                 </tr>
@@ -299,20 +330,30 @@ const UserProfile = () => {
                           </Col>
                         ) : (
                           <Col md={6}>
-                            <h5 className="font-size-14 mb-3">Doctor Information</h5>
+                            <h5 className="font-size-14 mb-3">
+                              Doctor Information
+                            </h5>
                             <table className="table">
                               <tbody>
                                 <tr>
                                   <th>Qualification :</th>
-                                  <td>{profileData.qualification || "Not specified"}</td>
+                                  <td>
+                                    {profileData.qualification ||
+                                      "Not specified"}
+                                  </td>
                                 </tr>
                                 <tr>
                                   <th>Specialty :</th>
-                                  <td>{profileData.specialty || "Not specified"}</td>
+                                  <td>
+                                    {profileData.specialty || "Not specified"}
+                                  </td>
                                 </tr>
                                 <tr>
                                   <th>Medical Registration Number :</th>
-                                  <td>{profileData.medical_registration_number || "Not specified"}</td>
+                                  <td>
+                                    {profileData.medical_registration_number ||
+                                      "Not specified"}
+                                  </td>
                                 </tr>
                               </tbody>
                             </table>
@@ -320,31 +361,43 @@ const UserProfile = () => {
                         )}
                       </Row>
 
-                      {userRole === 'doctor' && (
+                      {userRole === "doctor" && (
                         <Row className="mt-4">
                           <Col md={12}>
-                            <h5 className="font-size-14 mb-3">Additional Doctor Information</h5>
+                            <h5 className="font-size-14 mb-3">
+                              Additional Doctor Information
+                            </h5>
                             <table className="table">
                               <tbody>
                                 <tr>
                                   <th>Registration Expiry :</th>
                                   <td>
                                     {profileData.registration_expiry
-                                      ? new Date(profileData.registration_expiry).toLocaleDateString()
+                                      ? new Date(
+                                          profileData.registration_expiry
+                                        ).toLocaleDateString()
                                       : "Not specified"}
                                   </td>
                                 </tr>
                                 <tr>
                                   <th>Prescriber Number :</th>
-                                  <td>{profileData.prescriber_number || "Not specified"}</td>
+                                  <td>
+                                    {profileData.prescriber_number ||
+                                      "Not specified"}
+                                  </td>
                                 </tr>
                                 <tr>
                                   <th>Provider Number :</th>
-                                  <td>{profileData.provider_number || "Not specified"}</td>
+                                  <td>
+                                    {profileData.provider_number ||
+                                      "Not specified"}
+                                  </td>
                                 </tr>
                                 <tr>
                                   <th>HPI-I Number :</th>
-                                  <td>{profileData.hpi_i || "Not specified"}</td>
+                                  <td>
+                                    {profileData.hpi_i || "Not specified"}
+                                  </td>
                                 </tr>
                               </tbody>
                             </table>
@@ -352,7 +405,9 @@ const UserProfile = () => {
                         </Row>
                       )}
 
-                      <h5 className="font-size-14 mb-3 mt-4">Update Profile Information</h5>
+                      <h5 className="font-size-14 mb-3 mt-4">
+                        Update Profile Information
+                      </h5>
                       <Form onSubmit={validation.handleSubmit}>
                         {/* Personal Information */}
                         <Row>
@@ -365,16 +420,22 @@ const UserProfile = () => {
                                 onChange={validation.handleChange}
                                 onBlur={validation.handleBlur}
                                 value={validation.values.gender}
-                                invalid={validation.touched.gender && !!validation.errors.gender}
+                                invalid={
+                                  validation.touched.gender &&
+                                  !!validation.errors.gender
+                                }
                               >
                                 <option value="">Select Gender</option>
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
                                 <option value="other">Other</option>
                               </Input>
-                              {validation.touched.gender && validation.errors.gender && (
-                                <FormFeedback>{validation.errors.gender}</FormFeedback>
-                              )}
+                              {validation.touched.gender &&
+                                validation.errors.gender && (
+                                  <FormFeedback>
+                                    {validation.errors.gender}
+                                  </FormFeedback>
+                                )}
                             </div>
                           </Col>
                           <Col md={6}>
@@ -386,11 +447,17 @@ const UserProfile = () => {
                                 onChange={validation.handleChange}
                                 onBlur={validation.handleBlur}
                                 value={validation.values.date_of_birth}
-                                invalid={validation.touched.date_of_birth && !!validation.errors.date_of_birth}
+                                invalid={
+                                  validation.touched.date_of_birth &&
+                                  !!validation.errors.date_of_birth
+                                }
                               />
-                              {validation.touched.date_of_birth && validation.errors.date_of_birth && (
-                                <FormFeedback>{validation.errors.date_of_birth}</FormFeedback>
-                              )}
+                              {validation.touched.date_of_birth &&
+                                validation.errors.date_of_birth && (
+                                  <FormFeedback>
+                                    {validation.errors.date_of_birth}
+                                  </FormFeedback>
+                                )}
                             </div>
                           </Col>
                         </Row>
@@ -406,17 +473,23 @@ const UserProfile = () => {
                                 onChange={validation.handleChange}
                                 onBlur={validation.handleBlur}
                                 value={validation.values.contact_address}
-                                invalid={validation.touched.contact_address && !!validation.errors.contact_address}
+                                invalid={
+                                  validation.touched.contact_address &&
+                                  !!validation.errors.contact_address
+                                }
                               />
-                              {validation.touched.contact_address && validation.errors.contact_address && (
-                                <FormFeedback>{validation.errors.contact_address}</FormFeedback>
-                              )}
+                              {validation.touched.contact_address &&
+                                validation.errors.contact_address && (
+                                  <FormFeedback>
+                                    {validation.errors.contact_address}
+                                  </FormFeedback>
+                                )}
                             </div>
                           </Col>
                         </Row>
 
                         {/* Medical Information for Patients */}
-                        {userRole === 'patient' && (
+                        {userRole === "patient" && (
                           <>
                             <Row>
                               <Col md={6}>
@@ -429,11 +502,17 @@ const UserProfile = () => {
                                     onChange={validation.handleChange}
                                     onBlur={validation.handleBlur}
                                     value={validation.values.medicare_number}
-                                    invalid={validation.touched.medicare_number && !!validation.errors.medicare_number}
+                                    invalid={
+                                      validation.touched.medicare_number &&
+                                      !!validation.errors.medicare_number
+                                    }
                                   />
-                                  {validation.touched.medicare_number && validation.errors.medicare_number && (
-                                    <FormFeedback>{validation.errors.medicare_number}</FormFeedback>
-                                  )}
+                                  {validation.touched.medicare_number &&
+                                    validation.errors.medicare_number && (
+                                      <FormFeedback>
+                                        {validation.errors.medicare_number}
+                                      </FormFeedback>
+                                    )}
                                 </div>
                               </Col>
                               <Col md={6}>
@@ -445,11 +524,17 @@ const UserProfile = () => {
                                     onChange={validation.handleChange}
                                     onBlur={validation.handleBlur}
                                     value={validation.values.medicare_expiry}
-                                    invalid={validation.touched.medicare_expiry && !!validation.errors.medicare_expiry}
+                                    invalid={
+                                      validation.touched.medicare_expiry &&
+                                      !!validation.errors.medicare_expiry
+                                    }
                                   />
-                                  {validation.touched.medicare_expiry && validation.errors.medicare_expiry && (
-                                    <FormFeedback>{validation.errors.medicare_expiry}</FormFeedback>
-                                  )}
+                                  {validation.touched.medicare_expiry &&
+                                    validation.errors.medicare_expiry && (
+                                      <FormFeedback>
+                                        {validation.errors.medicare_expiry}
+                                      </FormFeedback>
+                                    )}
                                 </div>
                               </Col>
                             </Row>
@@ -465,11 +550,17 @@ const UserProfile = () => {
                                     onChange={validation.handleChange}
                                     onBlur={validation.handleBlur}
                                     value={validation.values.ihi}
-                                    invalid={validation.touched.ihi && !!validation.errors.ihi}
+                                    invalid={
+                                      validation.touched.ihi &&
+                                      !!validation.errors.ihi
+                                    }
                                   />
-                                  {validation.touched.ihi && validation.errors.ihi && (
-                                    <FormFeedback>{validation.errors.ihi}</FormFeedback>
-                                  )}
+                                  {validation.touched.ihi &&
+                                    validation.errors.ihi && (
+                                      <FormFeedback>
+                                        {validation.errors.ihi}
+                                      </FormFeedback>
+                                    )}
                                 </div>
                               </Col>
                             </Row>
@@ -479,7 +570,9 @@ const UserProfile = () => {
                         {/* Doctor Specific Fields */}
                         {userRole === "doctor" && (
                           <>
-                            <h5 className="font-size-14 mb-3 mt-4">Update Doctor Information</h5>
+                            <h5 className="font-size-14 mb-3 mt-4">
+                              Update Doctor Information
+                            </h5>
                             <Row>
                               <Col md={6}>
                                 <div className="mb-3">
@@ -491,11 +584,17 @@ const UserProfile = () => {
                                     onChange={validation.handleChange}
                                     onBlur={validation.handleBlur}
                                     value={validation.values.qualification}
-                                    invalid={validation.touched.qualification && !!validation.errors.qualification}
+                                    invalid={
+                                      validation.touched.qualification &&
+                                      !!validation.errors.qualification
+                                    }
                                   />
-                                  {validation.touched.qualification && validation.errors.qualification && (
-                                    <FormFeedback>{validation.errors.qualification}</FormFeedback>
-                                  )}
+                                  {validation.touched.qualification &&
+                                    validation.errors.qualification && (
+                                      <FormFeedback>
+                                        {validation.errors.qualification}
+                                      </FormFeedback>
+                                    )}
                                 </div>
                               </Col>
                               <Col md={6}>
@@ -508,11 +607,17 @@ const UserProfile = () => {
                                     onChange={validation.handleChange}
                                     onBlur={validation.handleBlur}
                                     value={validation.values.specialty}
-                                    invalid={validation.touched.specialty && !!validation.errors.specialty}
+                                    invalid={
+                                      validation.touched.specialty &&
+                                      !!validation.errors.specialty
+                                    }
                                   />
-                                  {validation.touched.specialty && validation.errors.specialty && (
-                                    <FormFeedback>{validation.errors.specialty}</FormFeedback>
-                                  )}
+                                  {validation.touched.specialty &&
+                                    validation.errors.specialty && (
+                                      <FormFeedback>
+                                        {validation.errors.specialty}
+                                      </FormFeedback>
+                                    )}
                                 </div>
                               </Col>
                             </Row>
@@ -527,12 +632,28 @@ const UserProfile = () => {
                                     placeholder="Enter Medical Registration Number"
                                     onChange={validation.handleChange}
                                     onBlur={validation.handleBlur}
-                                    value={validation.values.medical_registration_number}
-                                    invalid={validation.touched.medical_registration_number && !!validation.errors.medical_registration_number}
+                                    value={
+                                      validation.values
+                                        .medical_registration_number
+                                    }
+                                    invalid={
+                                      validation.touched
+                                        .medical_registration_number &&
+                                      !!validation.errors
+                                        .medical_registration_number
+                                    }
                                   />
-                                  {validation.touched.medical_registration_number && validation.errors.medical_registration_number && (
-                                    <FormFeedback>{validation.errors.medical_registration_number}</FormFeedback>
-                                  )}
+                                  {validation.touched
+                                    .medical_registration_number &&
+                                    validation.errors
+                                      .medical_registration_number && (
+                                      <FormFeedback>
+                                        {
+                                          validation.errors
+                                            .medical_registration_number
+                                        }
+                                      </FormFeedback>
+                                    )}
                                 </div>
                               </Col>
                               <Col md={6}>
@@ -543,12 +664,20 @@ const UserProfile = () => {
                                     type="date"
                                     onChange={validation.handleChange}
                                     onBlur={validation.handleBlur}
-                                    value={validation.values.registration_expiry}
-                                    invalid={validation.touched.registration_expiry && !!validation.errors.registration_expiry}
+                                    value={
+                                      validation.values.registration_expiry
+                                    }
+                                    invalid={
+                                      validation.touched.registration_expiry &&
+                                      !!validation.errors.registration_expiry
+                                    }
                                   />
-                                  {validation.touched.registration_expiry && validation.errors.registration_expiry && (
-                                    <FormFeedback>{validation.errors.registration_expiry}</FormFeedback>
-                                  )}
+                                  {validation.touched.registration_expiry &&
+                                    validation.errors.registration_expiry && (
+                                      <FormFeedback>
+                                        {validation.errors.registration_expiry}
+                                      </FormFeedback>
+                                    )}
                                 </div>
                               </Col>
                             </Row>
@@ -564,11 +693,17 @@ const UserProfile = () => {
                                     onChange={validation.handleChange}
                                     onBlur={validation.handleBlur}
                                     value={validation.values.prescriber_number}
-                                    invalid={validation.touched.prescriber_number && !!validation.errors.prescriber_number}
+                                    invalid={
+                                      validation.touched.prescriber_number &&
+                                      !!validation.errors.prescriber_number
+                                    }
                                   />
-                                  {validation.touched.prescriber_number && validation.errors.prescriber_number && (
-                                    <FormFeedback>{validation.errors.prescriber_number}</FormFeedback>
-                                  )}
+                                  {validation.touched.prescriber_number &&
+                                    validation.errors.prescriber_number && (
+                                      <FormFeedback>
+                                        {validation.errors.prescriber_number}
+                                      </FormFeedback>
+                                    )}
                                 </div>
                               </Col>
                               <Col md={6}>
@@ -581,11 +716,17 @@ const UserProfile = () => {
                                     onChange={validation.handleChange}
                                     onBlur={validation.handleBlur}
                                     value={validation.values.provider_number}
-                                    invalid={validation.touched.provider_number && !!validation.errors.provider_number}
+                                    invalid={
+                                      validation.touched.provider_number &&
+                                      !!validation.errors.provider_number
+                                    }
                                   />
-                                  {validation.touched.provider_number && validation.errors.provider_number && (
-                                    <FormFeedback>{validation.errors.provider_number}</FormFeedback>
-                                  )}
+                                  {validation.touched.provider_number &&
+                                    validation.errors.provider_number && (
+                                      <FormFeedback>
+                                        {validation.errors.provider_number}
+                                      </FormFeedback>
+                                    )}
                                 </div>
                               </Col>
                             </Row>
@@ -601,11 +742,17 @@ const UserProfile = () => {
                                     onChange={validation.handleChange}
                                     onBlur={validation.handleBlur}
                                     value={validation.values.hpi_i}
-                                    invalid={validation.touched.hpi_i && !!validation.errors.hpi_i}
+                                    invalid={
+                                      validation.touched.hpi_i &&
+                                      !!validation.errors.hpi_i
+                                    }
                                   />
-                                  {validation.touched.hpi_i && validation.errors.hpi_i && (
-                                    <FormFeedback>{validation.errors.hpi_i}</FormFeedback>
-                                  )}
+                                  {validation.touched.hpi_i &&
+                                    validation.errors.hpi_i && (
+                                      <FormFeedback>
+                                        {validation.errors.hpi_i}
+                                      </FormFeedback>
+                                    )}
                                 </div>
                               </Col>
                             </Row>
@@ -614,11 +761,20 @@ const UserProfile = () => {
 
                         {/* Hidden fields */}
                         {["id", "user", "created_by", "updated_by"].map((f) => (
-                          <Input key={f} type="hidden" name={f} value={validation.values[f] || ""} />
+                          <Input
+                            key={f}
+                            type="hidden"
+                            name={f}
+                            value={validation.values[f] || ""}
+                          />
                         ))}
 
                         <div className="text-center mt-4">
-                          <Button type="submit" color="danger" disabled={loading}>
+                          <Button
+                            type="submit"
+                            color="danger"
+                            disabled={loading}
+                          >
                             {loading ? (
                               <>
                                 <Spinner size="sm" className="me-2" />

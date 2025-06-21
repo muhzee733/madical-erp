@@ -16,25 +16,12 @@ export const registerUser = (user, navigator) => async (dispatch) => {
       user
     );
 
-    if (response.success === true) {
+    if (response.data.success === true) {
       dispatch(registerUserSuccessful(response.message));
     }
   } catch (error) {
-    let errorMessage = "Registration failed";
-    if (error.response?.data?.errors) {
-      // Convert the errors object into a string message
-      const errors = error.response.data.errors;
-      if (errors.email) {
-        errorMessage = Array.isArray(errors.email) ? errors.email[0] : errors.email;
-      } else if (errors.password) {
-        errorMessage = Array.isArray(errors.password) ? errors.password[0] : errors.password;
-      } else {
-        // If there are other errors, take the first one
-        const firstError = Object.values(errors)[0];
-        errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
-      }
-    }
-    dispatch(registerUserFailed(errorMessage));
+    console.log(error)
+    dispatch(registerUserFailed(error.response.data.errors.email[0]));
   }
 };
 

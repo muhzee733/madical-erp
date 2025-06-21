@@ -28,7 +28,7 @@ import { useFormik } from "formik";
 // actions
 import { loginUser, resetLoginFlag } from "../../slices/thunks";
 
-import logoLight from "../../assets/images/pro-logo.png";
+import logoLight from "../../assets/images/pro-logo-2.png";
 import { createSelector } from "reselect";
 //import images
 
@@ -81,41 +81,22 @@ const Login = (props) => {
           }
         );
         const data = await response.json();
-        
+        console.log(data, 'data')
         if (response.ok) {
           setMessage({ text: data.message || 'Login successful!', type: 'success' });
           dispatch(loginUser(data, navigate));
-        } else {
-          setMessage({ text: data.message || 'Login failed. Please try again.', type: 'error' });
         }
       } catch (error) {
-        console.log(error);
-        setMessage({ text: 'An error occurred. Please try again.', type: 'error' });
+        setMessage({ text: error || 'An error occurred. Please try again.', type: 'error' });
       } finally {
         setIsLoading(false);
       }
     },
   });
 
-  // Clear message after 5 seconds
-  useEffect(() => {
-    if (message.text) {
-      const timer = setTimeout(() => {
-        setMessage({ text: '', type: '' });
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [message]);
-
-  useEffect(() => {
-    if (errorMsg) {
-      setTimeout(() => {
-        dispatch(resetLoginFlag());
-      }, 2000);
-    }
-  }, [dispatch, errorMsg]);
-
   document.title = "Login | ProMedicine";
+
+  console.log(message.text, 'message')
 
   return (
     <React.Fragment>

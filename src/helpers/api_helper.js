@@ -16,6 +16,7 @@ if (token) axios.defaults.headers.common["Authorization"] = "Bearer " + token;
 // intercepting to capture errors
 axios.interceptors.response.use(
   function (response) {
+
     return response;
   },
   function (error) {

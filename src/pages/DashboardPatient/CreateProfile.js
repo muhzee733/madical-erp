@@ -21,7 +21,7 @@ import { useFormik } from "formik";
 import Cookies from 'universal-cookie';
 
 //redux
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 // actions
 import { createPatientProfile, createDoctorProfile } from "../../slices/thunks";
@@ -36,6 +36,8 @@ const CreateProfile = () => {
   const [userRole, setUserRole] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { error: reduxError, fieldErrors: reduxFieldErrors = {} } = useSelector((state) => state.Profile);
 
   useEffect(() => {
     const userData = cookies.get("user");
@@ -110,21 +112,14 @@ const CreateProfile = () => {
         } else {
           response = await dispatch(createPatientProfile(values));
         }
-
         if (response) {
           setSuccess("Profile created successfully! Redirecting...");
           setTimeout(() => {
             navigate("/user-profile");
           }, 2000);
         }
-      } catch (err) {
-        if (err.response?.status === 404) {
-          const errorData = err.response.data;
-          setFieldErrors(errorData);
-          setError("Please correct the errors below");
-        } else {
-          setError(err.message || "Failed to create profile");
-        }
+      } catch (error) {
+        console.log(error)
       } finally {
         setIsSubmitting(false);
       }
@@ -146,6 +141,17 @@ const CreateProfile = () => {
                     <div>
                       <h5 className="mb-1">Error</h5>
                       <p className="mb-0">{error}</p>
+                    </div>
+                  </div>
+                </Alert>
+              )}
+              {reduxError && (
+                <Alert color="danger" className="mb-4">
+                  <div className="d-flex align-items-center">
+                    <i className="ri-error-warning-line me-2 fs-4"></i>
+                    <div>
+                      <h5 className="mb-1">Error</h5>
+                      <p className="mb-0">{reduxError}</p>
                     </div>
                   </div>
                 </Alert>
@@ -254,13 +260,13 @@ const CreateProfile = () => {
                             value={validation.values.medicare_number || ""}
                             invalid={
                               (validation.touched.medicare_number && validation.errors.medicare_number) || 
-                              fieldErrors.medicare_number ? true : false
+                              reduxFieldErrors.medicare_number ? true : false
                             }
                           />
                           {validation.touched.medicare_number && validation.errors.medicare_number ? (
                             <FormFeedback type="invalid">{validation.errors.medicare_number}</FormFeedback>
-                          ) : fieldErrors.medicare_number ? (
-                            <FormFeedback type="invalid">{fieldErrors.medicare_number[0]}</FormFeedback>
+                          ) : reduxFieldErrors.medicare_number ? (
+                            <FormFeedback type="invalid">{reduxFieldErrors.medicare_number[0]}</FormFeedback>
                           ) : null}
                         </div>
                       </Col>
@@ -299,13 +305,13 @@ const CreateProfile = () => {
                             value={validation.values.ihi || ""}
                             invalid={
                               (validation.touched.ihi && validation.errors.ihi) || 
-                              fieldErrors.ihi ? true : false
+                              reduxFieldErrors.ihi ? true : false
                             }
                           />
                           {validation.touched.ihi && validation.errors.ihi ? (
                             <FormFeedback type="invalid">{validation.errors.ihi}</FormFeedback>
-                          ) : fieldErrors.ihi ? (
-                            <FormFeedback type="invalid">{fieldErrors.ihi[0]}</FormFeedback>
+                          ) : reduxFieldErrors.ihi ? (
+                            <FormFeedback type="invalid">{reduxFieldErrors.ihi[0]}</FormFeedback>
                           ) : null}
                         </div>
                       </Col>
@@ -327,13 +333,13 @@ const CreateProfile = () => {
                                 value={validation.values.qualification || ""}
                                 invalid={
                                   (validation.touched.qualification && validation.errors.qualification) || 
-                                  fieldErrors.qualification ? true : false
+                                  reduxFieldErrors.qualification ? true : false
                                 }
                               />
                               {validation.touched.qualification && validation.errors.qualification ? (
                                 <FormFeedback type="invalid">{validation.errors.qualification}</FormFeedback>
-                              ) : fieldErrors.qualification ? (
-                                <FormFeedback type="invalid">{fieldErrors.qualification[0]}</FormFeedback>
+                              ) : reduxFieldErrors.qualification ? (
+                                <FormFeedback type="invalid">{reduxFieldErrors.qualification[0]}</FormFeedback>
                               ) : null}
                             </div>
                           </Col>
@@ -350,13 +356,13 @@ const CreateProfile = () => {
                                 value={validation.values.specialty || ""}
                                 invalid={
                                   (validation.touched.specialty && validation.errors.specialty) || 
-                                  fieldErrors.specialty ? true : false
+                                  reduxFieldErrors.specialty ? true : false
                                 }
                               />
                               {validation.touched.specialty && validation.errors.specialty ? (
                                 <FormFeedback type="invalid">{validation.errors.specialty}</FormFeedback>
-                              ) : fieldErrors.specialty ? (
-                                <FormFeedback type="invalid">{fieldErrors.specialty[0]}</FormFeedback>
+                              ) : reduxFieldErrors.specialty ? (
+                                <FormFeedback type="invalid">{reduxFieldErrors.specialty[0]}</FormFeedback>
                               ) : null}
                             </div>
                           </Col>
@@ -376,13 +382,13 @@ const CreateProfile = () => {
                                 value={validation.values.medical_registration_number || ""}
                                 invalid={
                                   (validation.touched.medical_registration_number && validation.errors.medical_registration_number) || 
-                                  fieldErrors.medical_registration_number ? true : false
+                                  reduxFieldErrors.medical_registration_number ? true : false
                                 }
                               />
                               {validation.touched.medical_registration_number && validation.errors.medical_registration_number ? (
                                 <FormFeedback type="invalid">{validation.errors.medical_registration_number}</FormFeedback>
-                              ) : fieldErrors.medical_registration_number ? (
-                                <FormFeedback type="invalid">{fieldErrors.medical_registration_number[0]}</FormFeedback>
+                              ) : reduxFieldErrors.medical_registration_number ? (
+                                <FormFeedback type="invalid">{reduxFieldErrors.medical_registration_number[0]}</FormFeedback>
                               ) : null}
                             </div>
                           </Col>
@@ -399,13 +405,13 @@ const CreateProfile = () => {
                                 value={validation.values.prescriber_number || ""}
                                 invalid={
                                   (validation.touched.prescriber_number && validation.errors.prescriber_number) || 
-                                  fieldErrors.prescriber_number ? true : false
+                                  reduxFieldErrors.prescriber_number ? true : false
                                 }
                               />
                               {validation.touched.prescriber_number && validation.errors.prescriber_number ? (
                                 <FormFeedback type="invalid">{validation.errors.prescriber_number}</FormFeedback>
-                              ) : fieldErrors.prescriber_number ? (
-                                <FormFeedback type="invalid">{fieldErrors.prescriber_number[0]}</FormFeedback>
+                              ) : reduxFieldErrors.prescriber_number ? (
+                                <FormFeedback type="invalid">{reduxFieldErrors.prescriber_number[0]}</FormFeedback>
                               ) : null}
                             </div>
                           </Col>
@@ -425,13 +431,13 @@ const CreateProfile = () => {
                                 value={validation.values.provider_number || ""}
                                 invalid={
                                   (validation.touched.provider_number && validation.errors.provider_number) || 
-                                  fieldErrors.provider_number ? true : false
+                                  reduxFieldErrors.provider_number ? true : false
                                 }
                               />
                               {validation.touched.provider_number && validation.errors.provider_number ? (
                                 <FormFeedback type="invalid">{validation.errors.provider_number}</FormFeedback>
-                              ) : fieldErrors.provider_number ? (
-                                <FormFeedback type="invalid">{fieldErrors.provider_number[0]}</FormFeedback>
+                              ) : reduxFieldErrors.provider_number ? (
+                                <FormFeedback type="invalid">{reduxFieldErrors.provider_number[0]}</FormFeedback>
                               ) : null}
                             </div>
                           </Col>
@@ -448,13 +454,13 @@ const CreateProfile = () => {
                                 value={validation.values.hpi_i || ""}
                                 invalid={
                                   (validation.touched.hpi_i && validation.errors.hpi_i) || 
-                                  fieldErrors.hpi_i ? true : false
+                                  reduxFieldErrors.hpi_i ? true : false
                                 }
                               />
                               {validation.touched.hpi_i && validation.errors.hpi_i ? (
                                 <FormFeedback type="invalid">{validation.errors.hpi_i}</FormFeedback>
-                              ) : fieldErrors.hpi_i ? (
-                                <FormFeedback type="invalid">{fieldErrors.hpi_i[0]}</FormFeedback>
+                              ) : reduxFieldErrors.hpi_i ? (
+                                <FormFeedback type="invalid">{reduxFieldErrors.hpi_i[0]}</FormFeedback>
                               ) : null}
                             </div>
                           </Col>
