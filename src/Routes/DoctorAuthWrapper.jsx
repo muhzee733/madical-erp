@@ -19,8 +19,6 @@ const DoctorAuthWrapper = ({ children }) => {
     // First check the user role from cookies
     if (user.role !== "doctor") {
       setAuthorized(false);
-      cookies.remove("authUser");
-      cookies.remove("user");
       return;
     }
 
@@ -32,23 +30,19 @@ const DoctorAuthWrapper = ({ children }) => {
         },
       })
       .then((res) => {
-        if (res.data?.success) {
+        if (res.status === 200) {
           setAuthorized(true);
         } else {
           setAuthorized(false);
-          cookies.remove("authUser");
-          cookies.remove("user");
         }
       })
       .catch(() => {
         setAuthorized(false);
-        cookies.remove("authUser");
-        cookies.remove("user");
       });
   }, []);
 
   if (authorized === null) return null;
-  // if (!authorized) return <Navigate to="/unauthorized" replace />;
+  if (!authorized) return <Navigate to="/unauthorized" replace />;
 
   return children;
 };

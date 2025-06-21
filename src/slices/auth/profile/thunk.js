@@ -116,13 +116,19 @@ export const createPatientProfile = (profileData) => async (dispatch) => {
       }
     );
 
-    if (response) {
-      dispatch(profileSuccess(response));
+    if (response.status === 201) {
+      dispatch(profileSuccess({
+        status: "Profile Successfully Created"}));
     }
   } catch (error) {
-    dispatch(
-      profileError(error.response?.message || "Failed to create profile")
-    );
+    const errorData = error.response?.data;
+    const combinedMessage = errorData
+      ? Object.entries(errorData)
+          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
+          .join(" | ")
+      : error.message || "Something went wrong";
+
+    dispatch(profileError(combinedMessage));
   }
 };
 

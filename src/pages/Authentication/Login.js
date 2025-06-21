@@ -81,8 +81,7 @@ const Login = (props) => {
           }
         );
         const data = await response.json();
-        console.log(data, 'data')
-        if (response.ok) {
+        if (data) {
           setMessage({ text: data.message || 'Login successful!', type: 'success' });
           dispatch(loginUser(data, navigate));
         }
@@ -95,8 +94,6 @@ const Login = (props) => {
   });
 
   document.title = "Login | ProMedicine";
-
-  console.log(message.text, 'message')
 
   return (
     <React.Fragment>

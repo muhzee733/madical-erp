@@ -43,7 +43,7 @@ axios.interceptors.response.use(
  */
 const setAuthorization = (token) => {
   axios.defaults.headers.common["Authorization"] = "Bearer " + token;
-  cookies.set("authUser", JSON.stringify({ token }), { path: "/" });
+  cookies.set("authUser", token, { path: "/" });
 };
 
 class APIClient {

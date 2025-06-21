@@ -217,7 +217,7 @@ const UserProfile = () => {
   });
 
   document.title = "Profile | ProMedicine";
-  console.log(error);
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -255,13 +255,12 @@ const UserProfile = () => {
             </Col>
           </Row>
 
+          <h4 className="card-title mb-4">
+            {userRole === "doctor" ? "Doctor" : "Patient"} Profile Information
+          </h4>
+
           {error && (
             <>
-              <h4 className="card-title mb-4">
-                {userRole === "doctor" ? "Doctor" : "Patient"} Profile
-                Information
-              </h4>
-
               <Card>
                 <CardBody>
                   {!profileData ? null : (

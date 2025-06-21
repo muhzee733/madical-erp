@@ -106,12 +106,20 @@ const MyAppointments = React.memo(
                     </tr>
                   ) : (
                     appointments.results.map((appointment, index) => (
-                      <tr 
+                      <tr
                         key={appointment.id}
-                        className={appointment.status === "rescheduled" ? "text-muted" : ""}
+                        className={
+                          appointment.status === "rescheduled"
+                            ? "text-muted"
+                            : ""
+                        }
                         style={{
-                          opacity: appointment.status === "rescheduled" ? 0.6 : 1,
-                          pointerEvents: appointment.status === "rescheduled" ? "none" : "auto"
+                          opacity:
+                            appointment.status === "rescheduled" ? 0.6 : 1,
+                          pointerEvents:
+                            appointment.status === "rescheduled"
+                              ? "none"
+                              : "auto",
                         }}
                       >
                         <td>{index + 1}</td>
@@ -180,13 +188,24 @@ const MyAppointments = React.memo(
                             });
                           })()}
                         </td>
-                        <td>
-                          ${appointment.price || 0}
-                        </td>
+                        <td>${appointment.price || 0}</td>
                         <td>{getStatusBadge(appointment.status)}</td>
                         <td>
                           <div className="d-flex gap-2">
-                            {appointment.status === "booked" && (
+                            {["cancelled_by_patient"].includes(
+                              appointment.status
+                            ) ? (
+                              <>
+                                <Button color="warning" size="sm" disabled>
+                                  <i className="ri-calendar-event-line me-1"></i>
+                                  Reschedule
+                                </Button>
+                                <Button color="danger" size="sm" disabled>
+                                  <i className="ri-close-circle-line me-1"></i>
+                                  Cancel
+                                </Button>
+                              </>
+                            ) : (
                               <>
                                 <Button
                                   color="warning"
@@ -206,6 +225,27 @@ const MyAppointments = React.memo(
                                 </Button>
                               </>
                             )}
+
+                            {/* {appointment.status === "" && (
+                              <>
+                                <Button
+                                  color="warning"
+                                  size="sm"
+                                  onClick={() => onReschedule(appointment.id)}
+                                >
+                                  <i className="ri-calendar-event-line me-1"></i>
+                                  Reschedule
+                                </Button>
+                                <Button
+                                  color="danger"
+                                  size="sm"
+                                  onClick={() => handleCancelClick(appointment)}
+                                >
+                                  <i className="ri-close-circle-line me-1"></i>
+                                  Cancel
+                                </Button>
+                              </>
+                            )} */}
                             {appointment.rescheduled_from && (
                               <Badge color="info">
                                 <i className="ri-history-line me-1"></i>

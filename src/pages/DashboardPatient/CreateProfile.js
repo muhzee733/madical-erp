@@ -37,7 +37,8 @@ const CreateProfile = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { error: reduxError, fieldErrors: reduxFieldErrors = {} } = useSelector((state) => state.Profile);
+  const { error: reduxError, fieldErrors: reduxFieldErrors = {}, success: ReduxSuccess } = useSelector((state) => state.Profile);
+
 
   useEffect(() => {
     const userData = cookies.get("user");
@@ -105,19 +106,12 @@ const CreateProfile = () => {
         setError("");
         setSuccess("");
         setFieldErrors({});
-
-        let response;
         if (userRole === "doctor") {
-          response = await dispatch(createDoctorProfile(values));
+          await dispatch(createDoctorProfile(values));
         } else {
-          response = await dispatch(createPatientProfile(values));
+          await dispatch(createPatientProfile(values));
         }
-        if (response) {
-          setSuccess("Profile created successfully! Redirecting...");
-          setTimeout(() => {
-            navigate("/user-profile");
-          }, 2000);
-        }
+
       } catch (error) {
         console.log(error)
       } finally {
@@ -156,13 +150,12 @@ const CreateProfile = () => {
                   </div>
                 </Alert>
               )}
-              {success && (
+              {ReduxSuccess && (
                 <Alert color="success" className="mb-4">
                   <div className="d-flex align-items-center">
                     <i className="ri-checkbox-circle-line me-2 fs-4"></i>
                     <div>
-                      <h5 className="mb-1">Success</h5>
-                      <p className="mb-0">{success}</p>
+                    <p className="mb-0">{typeof ReduxSuccess === "string" ? ReduxSuccess : JSON.stringify(ReduxSuccess)}</p>
                     </div>
                   </div>
                 </Alert>

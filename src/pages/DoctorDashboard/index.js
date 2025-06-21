@@ -8,7 +8,7 @@ import { getAppointments } from "../../slices/appointments/thunk";
 
 const DoctorDashboard = () => {
   const dispatch = useDispatch();
-  document.title = "Doctor Dashboard | Velzon - React Admin & Dashboard Template";
+  document.title = "Doctor Dashboard | ProMedicine";
 
   const { appointments, error, loading, lastUpdated } = useSelector((state) => state.Appointment);
 
