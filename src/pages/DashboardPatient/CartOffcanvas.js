@@ -49,7 +49,7 @@ const CartOffcanvas = ({
         }
       );
 
-      if (response) {
+      if (response && response.data) {
         setSuccess(true);
         onRemoveItem(cartItems[0].id);
         // Clear cart and close offcanvas
@@ -61,7 +61,7 @@ const CartOffcanvas = ({
           setSuccess(false);
           setError(null);
           toggle(); // Close the offcanvas
-        }, 2000);
+        }, 1000);
       }
     } catch (error) {
       if (error) {
