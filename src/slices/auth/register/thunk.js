@@ -7,9 +7,11 @@ import {
   registerUserFailed,
   resetRegisterFlagChange,
   apiErrorChange,
+  setRegisterLoading,
 } from "./reducer";
 
 export const registerUser = (user, navigator) => async (dispatch) => {
+  dispatch(setRegisterLoading());
   try {
     const response = await axios.post(
       `${process.env.REACT_APP_API_URL}/users/register/`,

@@ -33,6 +33,9 @@ const registerSlice = createSlice({
       state.error = action.payload;
       state.loading = false;
       state.isUserLogout = false;
+    },
+    setRegisterLoading(state) {
+      state.loading = true;
     }
   }
 });
@@ -41,7 +44,8 @@ export const {
   registerUserSuccessful,
   registerUserFailed,
   resetRegisterFlagChange,
-  apiErrorChange
+  apiErrorChange,
+  setRegisterLoading
 } = registerSlice.actions;
 
 export default registerSlice.reducer;

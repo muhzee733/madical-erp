@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Row,
   Col,
@@ -11,6 +11,7 @@ import {
   Form,
   FormFeedback,
   Spinner,
+  Button,
 } from "reactstrap";
 import CryptoJS from "crypto-js";
 
@@ -30,7 +31,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 
 //import images
-import logoLight from "../../assets/images/pro-logo.png";
+import logoLight from "../../assets/images/pro-logo-2.png";
 import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
 import { createSelector } from "reselect";
 
@@ -38,10 +39,11 @@ const Register = () => {
   const navigator = useNavigate();
   const dispatch = useDispatch();
 
-  const validation = useFormik({
-    // enableReinitialize : use this flag when initial values needs to be changed
-    enableReinitialize: true,
+  // Registration type toggle
+  const [registerType, setRegisterType] = useState("patient");
 
+  const validation = useFormik({
+    enableReinitialize: true,
     initialValues: {
       email: "",
       fname: "",
@@ -66,7 +68,7 @@ const Register = () => {
     }),
     onSubmit: (values) => {
       const payload = {
-        role: "patient",
+        role: registerType,
         phone_number: values.phone,
         email: values.email,
         first_name: values.fname,
@@ -101,7 +103,7 @@ const Register = () => {
     setTimeout(() => {
       dispatch(resetRegisterFlag());
     }, 3000);
-  }, [dispatch, success, error, history]);
+  }, [dispatch, success, error, navigator]);
 
   document.title = "Register | ProMedicine";
 
@@ -127,7 +129,25 @@ const Register = () => {
                 <Card className="mt-4">
                   <CardBody className="p-4">
                     <div className="text-center mt-2">
-                      <h5 className="text-primary">Create New Account</h5>
+                      <h5 className="text-primary">
+                        {registerType === "doctor" ? "Doctor Registration" : "Patient Registration"}
+                      </h5>
+                    </div>
+                    <div className="d-flex justify-content-center gap-3 mt-3 mb-4">
+                      <Button
+                        color={registerType === "patient" ? "primary" : "secondary"}
+                        onClick={() => setRegisterType("patient")}
+                        outline={registerType !== "patient"}
+                      >
+                        Patient Register
+                      </Button>
+                      <Button
+                        color={registerType === "doctor" ? "primary" : "secondary"}
+                        onClick={() => setRegisterType("doctor")}
+                        outline={registerType !== "doctor"}
+                      >
+                        Doctor Register
+                      </Button>
                     </div>
                     <div className="p-2 mt-4">
                       <Form
@@ -327,18 +347,6 @@ const Register = () => {
                             </FormFeedback>
                           ) : null}
                         </div>
-
-                        {/* <div className="mb-4">
-                          <p className="mb-0 fs-12 text-muted fst-italic">
-                            By registering you agree to the Velzon
-                            <Link
-                              to="#"
-                              className="text-primary text-decoration-underline fst-normal fw-medium"
-                            >
-                              Terms of Use
-                            </Link>
-                          </p>
-                        </div> */}
 
                         <div className="mt-4">
                           <button
