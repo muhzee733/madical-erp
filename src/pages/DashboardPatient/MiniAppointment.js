@@ -5,8 +5,6 @@ import { useState } from "react";
 const MiniAppointment = ({ doctor, appointments, onBookSlot, loading }) => {
   const [activeTab, setActiveTab] = useState("1");
 
-  console.log('MiniAppointment received props:', { doctor, appointments });
-
   // Group appointments by date
   const appointmentsByDate = appointments?.results?.reduce((acc, slot) => {
     const date = new Date(slot.start_time).toLocaleDateString();

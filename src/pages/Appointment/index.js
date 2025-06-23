@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Button,
   Row,
@@ -15,19 +15,17 @@ import DoctorAuthWrapper from "../../Routes/DoctorAuthWrapper";
 import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { useMemo } from "react";
 
 // FullCalendar Imports
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { getAppointments, getDoctorSchedules } from "../../slices/thunks";
 
 const Appointment = () => {
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(true);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -35,16 +33,17 @@ const Appointment = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessages, setErrorMessages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const [paginatedSchedules, setPaginatedSchedules] = useState([]);
+  const [pagination, setPagination] = useState({
+    count: 0,
+    next: null,
+    previous: null,
+    currentPage: 1,
+  });
 
   document.title = "Appointment | ProMedicine";
-
-  const localLoading = true;
-  const {
-    doctorSchedules,
-    appointments,
-    loading: reduxLoading,
-    error,
-  } = useSelector((state) => state.Appointment);
 
   const deleteAvailability = async (id) => {
     const result = await Swal.fire({
@@ -59,37 +58,17 @@ const Appointment = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await axios.delete(
+        await axios.delete(
           `${process.env.REACT_APP_API_URL}/appointments/availabilities/${id}/delete/`
         );
-        console.log(response, "response delete");
-        if (response.status === 204) {
-          dispatch(getAppointments());
-          Swal.fire(
-            "Deleted!",
-            "The availability slot has been removed.",
-            "success"
-          );
-        }
+        fetchPaginatedSchedules();
+        Swal.fire("Deleted!", "The availability slot has been removed.", "success");
       } catch (error) {
-        Swal.fire(
-          "Error!",
-          error?.response?.message || "Failed to delete the slot.",
-          "error"
-        );
+        Swal.fire("Error!", "Failed to delete the slot.", "error");
       }
     }
   };
 
-  useEffect(() => {
-    dispatch(getDoctorSchedules());
-    setLoading(false);
-    const userCookie = Cookies.get("user");
-    if (userCookie) {
-      setUser(JSON.parse(userCookie));
-    }
-    setToken(Cookies.get("authUser"));
-  }, [dispatch]);
   const handleDateClick = (info) => {
     const clickedDate = new Date(info.dateStr);
     clickedDate.setHours(0, 0, 0, 0);
@@ -105,12 +84,7 @@ const Appointment = () => {
 
   const generateTimeSlots = () => {
     const slots = [];
-    const now = new Date();
-    now.setSeconds(0);
-    now.setMilliseconds(0);
-
-    const selected = selectedDate ? new Date(selectedDate) : null;
-    if (selected) selected.setHours(0, 0, 0, 0);
+    if (!selectedDate) return slots;
 
     for (let h = 8; h <= 20; h++) {
       for (let m = 0; m < 60; m += 15) {
@@ -118,19 +92,7 @@ const Appointment = () => {
         const minute = m.toString().padStart(2, "0");
         const timeStr = `${hour}:${minute}`;
         const ampm = h < 12 ? "AM" : "PM";
-
-        const slotTime = new Date(selectedDate || now);
-        slotTime.setHours(h, m, 0, 0);
-
-        if (selected) {
-          if (selected.getTime() === today.getTime()) {
-            if (slotTime > now) {
-              slots.push({ time: timeStr, label: `${timeStr} ${ampm}` });
-            }
-          } else if (selected > today) {
-            slots.push({ time: timeStr, label: `${timeStr} ${ampm}` });
-          }
-        }
+        slots.push({ time: timeStr, label: `${timeStr} ${ampm}` });
       }
     }
     return slots;
@@ -175,7 +137,6 @@ const Appointment = () => {
       return;
     }
 
-    // Format the payload according to the required structure
     const payload = {
       date: selectedDate,
       start_times: selectedSlots.map((slot) => slot.time),
@@ -193,19 +154,58 @@ const Appointment = () => {
         }
       );
       if (response) {
-        setSuccessMessage(response?.data.message);
+        setSuccessMessage("Schedule created successfully.");
         setSelectedSlots([]);
-        dispatch(getDoctorSchedules());
+        fetchPaginatedSchedules();
       }
     } catch (error) {
       setErrorMessages([
         error.response?.message || "Something went wrong while submitting.",
       ]);
-      console.error("Error creating schedule:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const getPageFromUrl = (url) => {
+    const params = new URLSearchParams(url?.split("?")[1]);
+    return parseInt(params.get("page") || 1, 10);
+  };
+
+  const fetchPaginatedSchedules = async (url = null) => {
+    setLoading(true);
+    try {
+      const endpoint =
+        url ||
+        `${process.env.REACT_APP_API_URL}/appointments/availabilities/list/?page=${pagination.currentPage}`;
+      const res = await axios.get(endpoint, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log(res, 'res')
+      setPaginatedSchedules(res.data.results);
+      setPagination({
+        count: res.data.count,
+        next: res.data.next,
+        previous: res.data.previous,
+        currentPage: getPageFromUrl(endpoint),
+      });
+    } catch (error) {
+      console.error("Pagination fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const todayStr = new Date().toISOString().split("T")[0];
+    setSelectedDate(todayStr);
+
+    const userCookie = Cookies.get("user");
+    if (userCookie) setUser(JSON.parse(userCookie));
+    setToken(Cookies.get("authUser"));
+
+    fetchPaginatedSchedules();
+  }, []);
 
   return (
     <div className="page-content">
@@ -225,6 +225,7 @@ const Appointment = () => {
                     dayCellClassNames={getDayClassNames}
                     height="auto"
                     weekends={false}
+                    initialDate={selectedDate}
                   />
                 </CardBody>
               </Card>
@@ -241,7 +242,6 @@ const Appointment = () => {
                         {successMessage}
                       </Alert>
                     )}
-
                     {errorMessages.length > 0 && (
                       <Alert color="danger" toggle={() => setErrorMessages([])}>
                         <ul className="mb-0">
@@ -251,7 +251,6 @@ const Appointment = () => {
                         </ul>
                       </Alert>
                     )}
-
                     <h5 className="mb-4">
                       Select Time Slot for <strong>{selectedDate}</strong>
                     </h5>
@@ -283,86 +282,95 @@ const Appointment = () => {
               )}
             </Col>
           </Row>
+
           <Row className="mt-4">
             <Col>
               <Card>
                 <CardBody>
                   <h5 className="mb-3">All Appointments</h5>
-
                   {loading ? (
                     <div className="text-center my-4">
-                      <div
-                        className="spinner-border text-primary"
-                        role="status"
-                      >
+                      <div className="spinner-border text-primary" role="status">
                         <span className="visually-hidden">Loading...</span>
                       </div>
                     </div>
                   ) : (
-                    <div className="table-responsive">
-                      <Table className="table-bordered align-middle mb-0">
-                        <thead>
-                          <tr>
-                            <th>#</th>
-                            <th>Created At</th>
-                            <th>Start Time</th>
-                            <th>End Time</th>
-                            <th>Slot Type</th>
-                            <th>Booked</th>
-                            <th>Timezone</th>
-                            <th>Delete</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {doctorSchedules?.length > 0 ? (
-                            doctorSchedules?.map((slot, index) => (
-                              <tr key={slot.id}>
-                                <td>{index + 1}</td>
-                                <td>
-                                  {new Date(slot.created_at).toLocaleString()}
-                                </td>
-                                <td>
-                                  {new Date(slot.start_time).toLocaleString()}
-                                </td>
-                                <td>
-                                  {new Date(slot.end_time).toLocaleString()}
-                                </td>
-                                <td className="text-capitalize">
-                                  {slot.slot_type}
-                                </td>
-                                <td>
-                                  {slot.is_booked ? (
-                                    <span className="badge bg-danger">
-                                      Booked
-                                    </span>
-                                  ) : (
-                                    <span className="badge bg-success">
-                                      Available
-                                    </span>
-                                  )}
-                                </td>
-                                <td>{slot.timezone}</td>
-                                <td>
-                                  <button
-                                    onClick={() => deleteAvailability(slot.id)}
-                                    disabled={slot.is_booked}
-                                    className="bg-danger border-0 text-white px-3 py-1 rounded disabled:opacity-50"
-                                  >
-                                    Delete
-                                  </button>
+                    <>
+                      <div className="table-responsive">
+                        <Table className="table-bordered align-middle mb-0">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Created At</th>
+                              <th>Start Time</th>
+                              <th>End Time</th>
+                              <th>Slot Type</th>
+                              <th>Booked</th>
+                              <th>Timezone</th>
+                              <th>Delete</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {paginatedSchedules.length > 0 ? (
+                              paginatedSchedules.map((slot, index) => (
+                                <tr key={slot.id}>
+                                  <td>
+                                    {index + 1 + (pagination.currentPage - 1) * 10}
+                                  </td>
+                                  <td>{new Date(slot.created_at).toLocaleString()}</td>
+                                  <td>{new Date(slot.start_time).toLocaleString()}</td>
+                                  <td>{new Date(slot.end_time).toLocaleString()}</td>
+                                  <td className="text-capitalize">{slot.slot_type}</td>
+                                  <td>
+                                    {slot.is_booked ? (
+                                      <span className="badge bg-danger">Booked</span>
+                                    ) : (
+                                      <span className="badge bg-success">Available</span>
+                                    )}
+                                  </td>
+                                  <td>{slot.timezone}</td>
+                                  <td>
+                                    <button
+                                      onClick={() => deleteAvailability(slot.id)}
+                                      disabled={slot.is_booked}
+                                      className="bg-danger border-0 text-white px-3 py-1 rounded"
+                                    >
+                                      Delete
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan="8" className="text-center">
+                                  No appointments found.
                                 </td>
                               </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan="8" className="text-center">
-                                No appointments found.
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </Table>
-                    </div>
+                            )}
+                          </tbody>
+                        </Table>
+                      </div>
+
+                      <div className="d-flex justify-content-end mt-3">
+                        <Button
+                          color="secondary"
+                          onClick={() => fetchPaginatedSchedules(pagination.previous)}
+                          disabled={!pagination.previous}
+                        >
+                          Previous
+                        </Button>
+                        <span className="mx-2 align-self-center">
+                          Page {pagination.currentPage}
+                        </span>
+                        <Button
+                          color="secondary"
+                          onClick={() => fetchPaginatedSchedules(pagination.next)}
+                          disabled={!pagination.next}
+                        >
+                          Next
+                        </Button>
+                      </div>
+                    </>
                   )}
                 </CardBody>
               </Card>
@@ -371,7 +379,6 @@ const Appointment = () => {
         </Container>
       </DoctorAuthWrapper>
 
-      {/* Style for disabled days */}
       <style>
         {`
           .fc-day-disabled {

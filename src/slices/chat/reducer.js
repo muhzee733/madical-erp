@@ -9,6 +9,7 @@ const initialState = {
   roomId: null,
   messages: [],
   chatRooms: [],
+  chatLoading: false,
 };
 
 const chatReducer = (state = initialState, action) => {
@@ -23,6 +24,8 @@ const chatReducer = (state = initialState, action) => {
       return { ...state, messages: [] };
     case 'SET_CHAT_ROOMS':
       return { ...state, chatRooms: action.payload };
+    case 'SET_CHAT_LOADING':
+      return { ...state, chatLoading: action.payload };
     default:
       return state;
   }

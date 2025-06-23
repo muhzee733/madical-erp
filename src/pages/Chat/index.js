@@ -14,7 +14,7 @@ import classnames from "classnames";
 import SimpleBar from "simplebar-react";
 import ChatBox from "./ChatBox";
 import Cookies from "js-cookie";
-
+import { useSelector } from 'react-redux';
 
 import avatar2 from "../../assets/images/users/avatar-2.jpg";
 
@@ -35,6 +35,9 @@ const Chat = () => {
   const [Chat_Box_Image, setChat_Box_Image] = useState(avatar2);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
+  const messages = useSelector((state) => state.Chat.messages);
+  const chatRooms = useSelector((state) => state.Chat.chatRooms?.data || []);
+  const totalUnread = chatRooms.reduce((sum, room) => sum + (room.unread_count || 0), 0);
   document.title = "Chat | ProMedicine";
 
   return (
@@ -74,6 +77,9 @@ const Chat = () => {
                     }}
                   >
                     Chats
+                    {totalUnread > 0 && (
+                      <span className="badge bg-danger ms-2">{totalUnread}</span>
+                    )}
                   </NavLink>
                 </NavItem>
                 <NavItem>
@@ -133,6 +139,7 @@ const Chat = () => {
                         Chat_Box_Image={Chat_Box_Image}
                         Chat_Box_Username={Chat_Box_Username}
                         userDummayImage="/assets/images/user.png"
+                        messages={messages}
                       />
                     ) : (
                       <div className="text-center text-muted mt-5">

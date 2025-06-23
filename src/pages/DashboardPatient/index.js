@@ -149,6 +149,8 @@ const DashboardPatient = () => {
     fetchAllData();
   }, [fetchAllData]);
 
+  console.log(doctorsList)
+
   return (
     <div className="page-content">
       <div className="container-fluid">

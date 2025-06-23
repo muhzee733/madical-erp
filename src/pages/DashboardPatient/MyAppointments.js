@@ -18,12 +18,15 @@ import {
   rescheduleAppointment,
   cancelAppointment,
 } from "../../slices/PatientAppointment/thunk";
+import { PostChatRooms } from '../../slices/chat/thunk';
+import Swal from 'sweetalert2';
 
 const MyAppointments = React.memo(
   ({ appointments, loading, error, onReschedule, onCancel }) => {
     const dispatch = useDispatch();
     const [cancelModal, setCancelModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const [chatLoading, setChatLoading] = useState(null);
 
     const getStatusBadge = useCallback((status) => {
       switch (status) {
@@ -58,6 +61,30 @@ const MyAppointments = React.memo(
         }
       }
     }, [selectedAppointment, onCancel, dispatch]);
+
+    const handleChatClick = async (payload) => {
+      if (!payload.patient || !payload.doctor || !payload.appointment) {
+        Swal.fire('Error!', 'Missing patient, doctor, or appointment ID.', 'error');
+        return;
+      }
+      setChatLoading(payload.appointment);
+      const response = await dispatch(PostChatRooms(payload));
+      setChatLoading(null);
+      console.log(response, 'response')
+      if (response?.data?.existing_room_id) {
+        Swal.fire('Error!', response.data.detail || 'Chat room already exists for this appointment.', 'error');
+      } else if (response?.status === 201 && response?.data?.id) {
+        Swal.fire({
+          title: 'Success!',
+          text: 'New chat room created',
+          icon: 'success',
+        }).then(() => {
+          window.location.href = '/chatroom';
+        });
+      } else {
+        Swal.fire('Error!', response?.data?.detail || 'Failed to create or find chat room.', 'error');
+      }
+    };
 
     return (
       <div className="my-appointments">
@@ -223,6 +250,25 @@ const MyAppointments = React.memo(
                                   <i className="ri-close-circle-line me-1"></i>
                                   Cancel
                                 </Button>
+                                {appointment.status === "booked" && (
+                                  <Button
+                                    color="info"
+                                    size="sm"
+                                    disabled={chatLoading === appointment.id}
+                                    onClick={() => handleChatClick({
+                                      patient: appointment.patient.id,
+                                      doctor: appointment.availability.doctor.id,
+                                      appointment: appointment.id,
+                                    })}
+                                  >
+                                    {chatLoading === appointment.id ? (
+                                      <Spinner size="sm" className="me-1" />
+                                    ) : (
+                                      <i className="ri-chat-1-line me-1"></i>
+                                    )}
+                                    Chat
+                                  </Button>
+                                )}
                               </>
                             )}
 
