@@ -72,14 +72,15 @@ const MyAppointments = React.memo(
       setChatLoading(null);
       console.log(response, 'response')
       if (response?.data?.existing_room_id) {
-        Swal.fire('Error!', response.data.detail || 'Chat room already exists for this appointment.', 'error');
+        // Redirect to the existing chat room
+        window.location.href = `/chatroom?room=${response.data.existing_room_id}`;
       } else if (response?.status === 201 && response?.data?.id) {
         Swal.fire({
           title: 'Success!',
           text: 'New chat room created',
           icon: 'success',
         }).then(() => {
-          window.location.href = '/chatroom';
+          window.location.href = `/chatroom?room=${response.data.id}`;
         });
       } else {
         Swal.fire('Error!', response?.data?.detail || 'Failed to create or find chat room.', 'error');

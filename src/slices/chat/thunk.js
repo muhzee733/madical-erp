@@ -102,3 +102,46 @@ export const PostChatRoomMessage = (roomid, message) => {
     }
   };
 };
+
+export const markAllMessagesRead = (roomId) => {
+  return async (dispatch) => {
+    const token = Cookies.get('authUser');
+    try {
+      await axios.post(
+        `${process.env.REACT_APP_API_URL}/chat/rooms/${roomId}/mark-all-read/`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      dispatch({ type: 'MARK_ALL_READ', payload: roomId });
+    } catch (error) {
+      console.error('Error marking all messages as read:', error);
+    }
+  };
+};
+
+export const markAppointmentCompleted = (appointmentId) => {
+  return async (dispatch) => {
+    const token = Cookies.get('authUser');
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/appointments/${appointmentId}/complete/`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw error;
+    }
+  };
+};

@@ -472,7 +472,7 @@ const PrescriptionForm = () => {
                             <tbody>
                               {selectedProducts.map((product, index) => (
                                 <tr key={index}>
-                                  <td>{product.supplier_name}</td>
+                                  <td>{product.brand_name}</td>
                                   <td>
                                     <input
                                       type="text"

@@ -38,6 +38,7 @@ const Chat = () => {
   const messages = useSelector((state) => state.Chat.messages);
   const chatRooms = useSelector((state) => state.Chat.chatRooms?.data || []);
   const totalUnread = chatRooms.reduce((sum, room) => sum + (room.unread_count || 0), 0);
+  const selectedRoom = chatRooms.find(room => room.id === selectedRoomId);
   document.title = "Chat | ProMedicine";
 
   return (
@@ -140,6 +141,7 @@ const Chat = () => {
                         Chat_Box_Username={Chat_Box_Username}
                         userDummayImage="/assets/images/user.png"
                         messages={messages}
+                        appointmentId={selectedRoom?.appointment_id}
                       />
                     ) : (
                       <div className="text-center text-muted mt-5">

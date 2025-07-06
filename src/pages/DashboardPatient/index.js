@@ -16,6 +16,7 @@ import CartOffcanvas from "./CartOffcanvas";
 import RescheduleOffcanvas from "./RescheduleOffcanvas";
 import { Button, Spinner, Alert } from "reactstrap";
 import MyAppointments from "./MyAppointments";
+import Swal from 'sweetalert2';
 
 // Cache object to store API responses
 const apiCache = {
@@ -86,6 +87,10 @@ const DashboardPatient = () => {
       fetchAllData();
     } catch (error) {
       console.error('Failed to cancel appointment:', error);
+      // Show error in SweetAlert if present
+      if (error && (error.error || error.detail)) {
+        Swal.fire('Error!', error.error || error.detail, 'error');
+      }
     }
   }, [dispatch, fetchAllData]);
 
@@ -148,8 +153,6 @@ const DashboardPatient = () => {
   const handleRescheduleSuccess = useCallback(() => {
     fetchAllData();
   }, [fetchAllData]);
-
-  console.log(doctorsList)
 
   return (
     <div className="page-content">

@@ -26,6 +26,16 @@ const chatReducer = (state = initialState, action) => {
       return { ...state, chatRooms: action.payload };
     case 'SET_CHAT_LOADING':
       return { ...state, chatLoading: action.payload };
+    case 'MARK_ALL_READ':
+      return {
+        ...state,
+        chatRooms: {
+          ...state.chatRooms,
+          data: state.chatRooms.data?.map(room =>
+            room.id === action.payload ? { ...room, unread_count: 0 } : room
+          )
+        }
+      };
     default:
       return state;
   }

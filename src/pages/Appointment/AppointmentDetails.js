@@ -16,12 +16,15 @@ import BreadCrumb from "../../Components/Common/BreadCrumb";
 import { useDispatch, useSelector } from "react-redux";
 import { getAppointmentById } from "../../slices/appointments/thunk";
 import { clearSelectedAppointment } from "../../slices/appointments/reducer";
+import { PostChatRooms } from '../../slices/chat/thunk';
+import Swal from 'sweetalert2';
 
 const AppointmentDetails = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { id } = useParams();
   const [open, setOpen] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
 
   const { selectedAppointment, loading, error } = useSelector((state) => state.Appointment);
 
@@ -64,6 +67,34 @@ const AppointmentDetails = () => {
         return "secondary";
       default:
         return "info";
+    }
+  };
+
+  const handleChatClick = async () => {
+    if (!selectedAppointment?.patient?.id || !selectedAppointment?.availability?.doctor?.id || !selectedAppointment?.id) {
+      Swal.fire('Error!', 'Missing patient, doctor, or appointment ID.', 'error');
+      return;
+    }
+    setChatLoading(true);
+    const payload = {
+      patient: selectedAppointment.patient.id,
+      doctor: selectedAppointment.availability.doctor.id,
+      appointment: selectedAppointment.id,
+    };
+    const response = await dispatch(PostChatRooms(payload));
+    setChatLoading(false);
+    if (response?.data?.existing_room_id) {
+      window.location.href = `/chatroom?room=${response.data.existing_room_id}`;
+    } else if (response?.status === 201 && response?.data?.id) {
+      Swal.fire({
+        title: 'Success!',
+        text: 'New chat room created',
+        icon: 'success',
+      }).then(() => {
+        window.location.href = `/chatroom?room=${response.data.id}`;
+      });
+    } else {
+      Swal.fire('Error!', response?.data?.detail || 'Failed to create or find chat room.', 'error');
     }
   };
 
@@ -114,7 +145,12 @@ const AppointmentDetails = () => {
                 <div className="d-flex justify-content-between align-items-center mb-4">
                   <h4 className="card-title mb-0">Appointment Details</h4>
                   <div>
-                    <Button color="success" className="me-2" onClick={() => navigate(`/chat/${selectedAppointment.id}`)}>
+                    <Button color="success" className="me-2" onClick={handleChatClick} disabled={chatLoading}>
+                      {chatLoading ? (
+                        <Spinner size="sm" className="me-1" />
+                      ) : (
+                        <i className="ri-chat-1-line me-1"></i>
+                      )}
                       Go for Chat
                     </Button>
                     <Button 

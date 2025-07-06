@@ -1,13 +1,16 @@
 // Firebase-integrated ChatBox.js
 import { useRef, useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { PostChatRoomMessage } from "../../slices/chat/thunk";
+import { PostChatRoomMessage, markAppointmentCompleted } from "../../slices/chat/thunk";
 import Cookies from "js-cookie";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import { Row, Col, Button, Spinner } from "reactstrap";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 
-const ChatBox = ({ roomId, Chat_Box_Image, Chat_Box_Username, userDummayImage, doctorId }) => {
+const ChatBox = ({ roomId, Chat_Box_Image, Chat_Box_Username, userDummayImage, doctorId, appointmentId }) => {
+
+  // console.log(appointmentId, 'appointmentId')
   const messagesEndRef = useRef(null);
   const userData = JSON.parse(Cookies.get("user") || "{}");
   const [message, setMessage] = useState("");
@@ -29,6 +32,15 @@ const ChatBox = ({ roomId, Chat_Box_Image, Chat_Box_Username, userDummayImage, d
         messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
       }
     }, 100);
+  };
+
+  const handleMarkCompleted = async () => {
+    try {
+      const result = await dispatch(markAppointmentCompleted(appointmentId));
+      Swal.fire("Success!", result.message, "success");
+    } catch (error) {
+      Swal.fire("Error!", error.message || "Failed to mark appointment as completed.", "error");
+    }
   };
 
   if (!roomId) {
@@ -161,10 +173,15 @@ const ChatBox = ({ roomId, Chat_Box_Image, Chat_Box_Username, userDummayImage, d
               disabled={isSending}
             />
           </div>
-          <div className="col-auto">
+          <div className="col-auto d-flex gap-2 align-items-center">
             <Button color="primary" type="submit" disabled={isSending || !message.trim()}>
               {isSending ? <Spinner size="sm" /> : <i className="ri-send-plane-2-fill"></i>}
             </Button>
+            {/* {isDoctor && (
+              <Button color="success" type="button" onClick={handleMarkCompleted}>
+                Mark Completed
+              </Button>
+            )} */}
           </div>
         </div>
       </form>

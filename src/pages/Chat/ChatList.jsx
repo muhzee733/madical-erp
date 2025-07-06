@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchChatRooms, GetChatRoomMessage } from '../../slices/chat/thunk';
+import { fetchChatRooms, GetChatRoomMessage, markAllMessagesRead } from '../../slices/chat/thunk';
 import { Spinner } from 'reactstrap';
 
 const ChatList = ({ setRoomId, setDoctorId, selectedRoomId }) => {
@@ -18,6 +18,7 @@ const ChatList = ({ setRoomId, setDoctorId, selectedRoomId }) => {
     await dispatch(GetChatRoomMessage(room.id));
     setRoomId(room.id);
     setDoctorId(room.doctor);
+    dispatch(markAllMessagesRead(room.id));
   };
 
   return (
